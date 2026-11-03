@@ -4,7 +4,7 @@ Synchronized price pop-ups + event-details end card for the Ipoh clearance-sale
 video (9:16, 1080 × 1920, TikTok / Facebook Reels).
 
 - `output/kamaar_price_popups.mp4` – final video, Full HD 1080 × 1920 (52.5 s)
-- `output/kamaar_price_popups_2k.mp4` – same video in 2K, 1440 × 2560
+- `promosi-jelajah/kamaar_price_popups_2k.mp4` – same video in 2K, 1440 × 2560 (project folder "promosi jelajah")
 - `render_kamaar_popups.py` – renderer (`ffmpeg`, Pillow, numpy)
 
 ```
