@@ -1,14 +1,16 @@
 #!/usr/bin/env python3
 """
-KAMAAR BEDDINGS - product price pop-ups + event end card.
+KAMAAR BEDDINGS - promo video renderer (9:16).
 
-Takes the presenter footage (1080x1920, 9:16), overlays three synchronized
-price pop-ups (bounce-in, ~1.85 s each) and appends an animated event-details
-end card ending with the KAMAAR BEDDINGS logo.
+Takes presenter footage (1080x1920) and adds: one bounce-in price pop-up per spoken
+price, a dramatic intro (hook, big date/time/location banners, "2 HARI SAHAJA!" slam),
+a minimal persistent date + location label, and an animated event end card ending with
+the KAMAAR BEDDINGS logo. All content/timings are constants at the top of this file.
 
 Usage:
-    python3 render_kamaar_popups.py INPUT.mp4 OUTPUT.mp4 [--logo logo.png] [--vo vo.mp3]
-                                    [--preview-dir DIR]
+    python3 -B -I render_kamaar_popups.py INPUT.mp4 OUTPUT.mp4 [--width 1440]
+        [--logo logo.png] [--vo vo.mp3] [--preview-dir DIR]
+    --width 1080 (default) = Full HD, 1440 = 2K (1440x2560). See ../SKILL.md.
 
 Requires: ffmpeg, Pillow, numpy. Fonts: Inter (falls back to DejaVu Sans Bold).
 """

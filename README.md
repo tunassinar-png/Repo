@@ -5,10 +5,10 @@ video (9:16, 1080 × 1920, TikTok / Facebook Reels).
 
 - `output/kamaar_price_popups.mp4` – final video, Full HD 1080 × 1920 (52.5 s)
 - `promosi-jelajah/kamaar_price_popups_2k.mp4` – same video in 2K, 1440 × 2560 (project folder "promosi jelajah")
-- `render_kamaar_popups.py` – renderer (`ffmpeg`, Pillow, numpy)
+- `.claude/skills/kamaar-promo-video/` – reusable skill for future videos: `SKILL.md` (workflow, rules, pitfalls), `scripts/render_kamaar_popups.py` (renderer: `ffmpeg`, Pillow, numpy), `scripts/caption_strips.py`, `scripts/verify_output.py`, and `reference/ipoh-nov-2026.md` (this video's full config)
 
 ```
-python3 render_kamaar_popups.py INPUT.mp4 output/kamaar_price_popups.mp4 [--logo logo.png] [--vo vo.mp3] [--width 1440]
+python3 .claude/skills/kamaar-promo-video/scripts/render_kamaar_popups.py INPUT.mp4 output/kamaar_price_popups.mp4 [--logo logo.png] [--vo vo.mp3] [--width 1440]
 ```
 
 `--width 1080` (default) renders Full HD, `--width 1440` renders 2K (1440 × 2560).
