@@ -7,7 +7,7 @@ price pop-ups (bounce-in, ~1.85 s each) and appends an animated event-details
 end card ending with the KAMAAR BEDDINGS logo.
 
 Usage:
-    python3 render_kamaar_popups.py INPUT.mp4 OUTPUT.mp4 [--logo logo.png]
+    python3 render_kamaar_popups.py INPUT.mp4 OUTPUT.mp4 [--logo logo.png] [--vo vo.mp3]
                                     [--preview-dir DIR]
 
 Requires: ffmpeg, Pillow, numpy. Fonts: Inter (falls back to DejaVu Sans Bold).
@@ -27,17 +27,48 @@ SS = 2  # supersampling factor for sprites
 # --------------------------------------------------------------------------
 # TIMELINE (seconds, in the source footage)
 # Times come from the word-level highlight of the burned-in captions
-# (cross-checked against the audio energy envelope, +/- 0.1 s): the pop-up
-# starts on the word that carries the PRICE, not the product name.
-#   Bantal ........ "harga hanya RM5"     RM5 spoken ~12.3 s
-#   Kain reject ... "seringgit saja"      "seringgit" spoken ~21.15 s
-#   Tilam Toto .... "dia RM29 saja"       RM29 spoken ~27.1 s
+# (cross-checked against the audio energy envelope, +/- 0.1 s). A pop-up
+# starts 0.05 s before the word that carries the PRICE is spoken, so the
+# bounce-in lands on the word. One pop-up per price mention in the VO.
+#   12.30  "bantal macam ni, harga hanya RM5"
+#   15.85  "kalau hangpa ambil 6 biji bantal macam ni, ni hanya RM29"
+#   18.75  "kain reject kilang, 1m, seringgit"
+#   21.15  "tak kira nipis tak, kira tebal 1m, seringgit saja"
+#   24.30  "abang akak sarung bantal ni 4 helai, RM10"
+#   27.10  "Tilam Toto ni harga, dia RM29 saja"
+#   29.60  "Tilam single RM39"
+#   34.40  "bantal peluk harga paling murah RM15"
+# NOT shown: "ambil RM tiga seratus" (~30.3 s) - wording unclear, see README.
 # --------------------------------------------------------------------------
 POPUP_DURATION = 1.85  # total on-screen time incl. bounce-in and exit
 POPUPS = [
     dict(name="BANTAL TIDUR", price="RM5.00", suffix=None, t_in=12.25),
+    dict(name="6 BIJI BANTAL", price="RM29.00", suffix=None, t_in=15.80),
+    dict(name="KAIN REJECT KILANG", price="RM1.00", suffix="/ METER", t_in=18.70),
     dict(name="KAIN REJECT KILANG", price="RM1.00", suffix="/ METER", t_in=21.10),
+    dict(name="SARUNG BANTAL (4 HELAI)", price="RM10.00", suffix=None, t_in=24.25),
     dict(name="TILAM TOTO", price="RM29.00", suffix=None, t_in=27.05),
+    dict(name="TILAM SINGLE", price="RM39.00", suffix=None, t_in=29.55),
+    dict(name="BANTAL PELUK", price="RM15.00", suffix=None, t_in=34.35),
+]
+# Intro: big date / time / location banners, revealed line by line as the
+# presenter says "Pada 7 dan 8 November, Sabtu dan Ahad, kami akan berada di
+# Dewan Serba Guna, Kampung Tersusun, Tawas Tambahan, Ipoh, 2 hari saja".
+# Placed in the empty wall/ceiling area (y 160-640), above the presenter.
+INTRO_TOP = 160
+INTRO_OUT = 10.90   # all banners leave before "bantal macam ni" (11.0 s)
+# (tag, banner t_in, height, [(text, weight, size, style, centre_y, t_line)])
+# styles: "outline" = yellow text, red outline; "plain" = white text;
+#         "plain_y" = yellow text; "pill_w" / "pill_y" = pills sharing one row
+INTRO = [
+    ("TARIKH & MASA", 4.00, 214, [
+        ("7 & 8 NOVEMBER 2026", "Black", 76, "outline", 70, 4.00),
+        ("SABTU & AHAD", "ExtraBold", 38, "pill_w", 156, 5.95),
+        ("9 PAGI – 10 MALAM", "Black", 38, "pill_y", 156, 6.55)]),
+    ("LOKASI", 7.45, 246, [
+        ("DEWAN SERBAGUNA", "ExtraBold", 58, "plain", 70, 7.45),
+        ("KAMPUNG TERSUSUN", "ExtraBold", 58, "plain", 136, 8.45),
+        ("TAWAS TAMBAHAN, IPOH", "Black", 52, "outline", 204, 9.20)]),
 ]
 POPUP_CENTER_Y = 1385  # lower-middle: above the burned-in captions (~y1650)
 END_CARD_SECONDS = 5.5
@@ -65,7 +96,12 @@ def downscale(img):
 
 def popup_sprite(name, price, suffix):
     """Rounded navy card: product name (white) above price (yellow, red outline)."""
-    f_name = font("ExtraBold", 50 * SS)
+    nsize = 50
+    while True:
+        f_name = font("ExtraBold", nsize * SS)
+        if f_name.getlength(name) <= 640 * SS or nsize <= 36:
+            break
+        nsize -= 2
     # shrink the price font until the content fits comfortably
     size = 118
     while True:
@@ -196,6 +232,96 @@ def paste(frame, sprite, cx, cy, scale=1.0, opacity=1.0, dy=0):
 
 
 # --------------------------------------------------------------------------
+# intro banners
+# --------------------------------------------------------------------------
+BANNER_W = 1000
+BANNER_GAP = 12
+BANNER_M = 44  # shadow margin (1x px)
+
+
+def banner_bg(h):
+    w, m = BANNER_W * SS, BANNER_M * SS
+    hh = h * SS
+    sprite = Image.new("RGBA", (w + 2 * m, hh + 2 * m), (0, 0, 0, 0))
+    sh = Image.new("RGBA", sprite.size, (0, 0, 0, 0))
+    ImageDraw.Draw(sh).rounded_rectangle((m, m + 8 * SS, m + w, m + hh + 8 * SS),
+                                         34 * SS, fill=(0, 0, 0, 150))
+    sprite = Image.alpha_composite(sprite, sh.filter(ImageFilter.GaussianBlur(16 * SS)))
+    ImageDraw.Draw(sprite).rounded_rectangle((m, m, m + w, m + hh), 34 * SS,
+                                             fill=NAVY + (222,), outline=YELLOW + (255,),
+                                             width=3 * SS)
+    return downscale(sprite)
+
+
+def build_intro():
+    """-> list of banners: dict(bg, cy, t_in, lines=[(sprite, rel_y, t_line, dx)])"""
+    banners, y = [], INTRO_TOP
+    for tag, t_in, h, lines in INTRO:
+        bg = banner_bg(h)
+        chip = pill_sprite(tag, "Black", 24, WHITE, RED + (255,), px=22, py=8, tracking=3)
+        bg.alpha_composite(chip, (BANNER_M + 34, BANNER_M - chip.height // 2))
+        ls = []
+        for text, weight, size, style, cy, t_line in lines:
+            if style == "pill_w":
+                sp = pill_sprite(text, weight, size, WHITE, (255, 255, 255, 30),
+                                 outline=YELLOW + (255,), px=26, py=14, tracking=0)
+            elif style == "pill_y":
+                sp = pill_sprite(text, weight, size, NAVY, YELLOW + (255,),
+                                 px=26, py=14, tracking=0)
+            else:
+                kw = dict(stroke=4, stroke_fill=RED) if style == "outline" else {}
+                col = WHITE if style == "plain" else YELLOW
+                while True:
+                    sp = text_sprite(text, weight, size, col, tracking=1, **kw)
+                    if sp.width <= BANNER_W - 80 + 48 or size < 30:
+                        break
+                    size -= 2
+            ls.append([sp, cy, t_line, 0, style])
+        # pills that share a row are centred as a group
+        pills = [l for l in ls if l[4].startswith("pill")]
+        if pills:
+            gap = 28
+            total = sum(l[0].width for l in pills) + gap * (len(pills) - 1)
+            x = -total / 2
+            for l in pills:
+                l[3] = int(x + l[0].width / 2)
+                x += l[0].width + gap
+        banners.append(dict(bg=bg, cy=y + h / 2, h=h, t_in=t_in,
+                            lines=[tuple(l[:4]) for l in ls]))
+        y += h + BANNER_GAP
+    return banners
+
+
+def intro_layers(banners, t):
+    """-> [(sprite, cx, cy, scale, opacity)] for the banners visible at time t."""
+    out = []
+    for b in banners:
+        lt = t - b["t_in"]
+        if lt < 0 or t >= INTRO_OUT:
+            continue
+        scale = 0.86 + 0.14 * spring(lt)     # gentle bounce, never wider than the frame
+        alpha = min(1.0, lt / 0.12)
+        if t > INTRO_OUT - 0.2:
+            k = (t - (INTRO_OUT - 0.2)) / 0.2
+            scale *= 1 - 0.08 * k
+            alpha *= 1 - k
+        sp = b["bg"].copy()
+        top = BANNER_M
+        for lsp, rel_y, t_line, dx in b["lines"]:
+            k = ease_out_cubic((t - t_line) / 0.30)
+            if k <= 0:
+                continue
+            layer = lsp
+            if k < 1:
+                layer = lsp.copy()
+                layer.putalpha(lsp.getchannel("A").point(lambda v, k=k: int(v * k)))
+            sp.alpha_composite(layer, (sp.width // 2 - layer.width // 2 + dx,
+                                       int(top + rel_y - layer.height / 2 + (1 - k) * 14)))
+        out.append((sp, W / 2, b["cy"], scale, alpha))
+    return out
+
+
+# --------------------------------------------------------------------------
 # end card
 # --------------------------------------------------------------------------
 def build_end_card(last_frame, logo_path):
@@ -269,6 +395,7 @@ def main():
     ap.add_argument("input")
     ap.add_argument("output")
     ap.add_argument("--logo", help="optional official logo PNG (transparent background)")
+    ap.add_argument("--vo", help="optional voice-over audio file played on the end card")
     ap.add_argument("--preview-dir", help="also dump key frames as PNG here")
     args = ap.parse_args()
 
@@ -277,6 +404,7 @@ def main():
         assert a["t_in"] + POPUP_DURATION <= b["t_in"], "pop-ups overlap"
 
     sprites = [popup_sprite(p["name"], p["price"], p["suffix"]) for p in POPUPS]
+    intro = build_intro()
     src_dur = probe_duration(args.input)
     video_tmp = str(Path(args.output).with_suffix(".video.mp4"))
     fbytes = W * H * 3
@@ -290,8 +418,11 @@ def main():
          "-preset", "medium", "-crf", "22", "-pix_fmt", "yuv420p",
          "-movflags", "+faststart", video_tmp], stdin=subprocess.PIPE)
 
-    preview_t = {12.1: "a_before_bantal", 12.5: "b_bantal", 13.4: "c_bantal_hold",
-                 14.3: "d_removed", 21.4: "e_kain", 27.4: "f_toto"}
+    preview_t = {4.6: "01_intro_date", 6.4: "02_intro_day", 7.9: "03_intro_loc",
+                 9.7: "04_intro_full", 11.2: "05_intro_gone",
+                 12.1: "06_before_bantal", 12.6: "07_bantal", 14.3: "08_removed",
+                 16.3: "09_6biji", 19.1: "10_kain1", 21.5: "11_kain2",
+                 24.9: "12_sarung", 27.4: "13_toto", 30.0: "14_single", 34.9: "15_peluk"}
     preview_frames = {round(t * FPS): n for t, n in preview_t.items()}
     pdir = Path(args.preview_dir) if args.preview_dir else None
     if pdir:
@@ -312,6 +443,12 @@ def main():
                     arr = Image.frombuffer("RGB", (W, H), buf, "raw", "RGB", 0, 1)
                 paste(arr, sp, W / 2, POPUP_CENTER_Y, st[0], st[1])
                 break
+        if arr is None:
+            layers = intro_layers(intro, t)
+            if layers:
+                arr = Image.frombuffer("RGB", (W, H), buf, "raw", "RGB", 0, 1)
+                for sp, cx, cy, sc, op in layers:
+                    paste(arr, sp, cx, cy, sc, op)
         if arr is not None:
             out = arr.tobytes()
         else:
@@ -340,14 +477,23 @@ def main():
     enc.wait()
 
     total = (n + total_end) / FPS
-    # mux original audio, fade it out at the end of the footage, pad with silence
+    # mux original audio, fade it out at the end of the footage, pad with silence;
+    # an optional --vo file is placed on the end card
     fade_st = max(0.0, n / FPS - 0.35)
-    subprocess.run(
-        ["ffmpeg", "-v", "error", "-y", "-i", video_tmp, "-i", args.input,
-         "-filter_complex",
-         f"[1:a]afade=t=out:st={fade_st:.3f}:d=0.35,apad=whole_dur={total:.3f}[a]",
-         "-map", "0:v", "-map", "[a]", "-c:v", "copy", "-c:a", "aac", "-b:a", "192k",
-         "-t", f"{total:.3f}", "-movflags", "+faststart", args.output], check=True)
+    cmd = ["ffmpeg", "-v", "error", "-y", "-i", video_tmp, "-i", args.input]
+    flt = (f"[1:a]aformat=sample_fmts=fltp:channel_layouts=stereo,"
+           f"afade=t=out:st={fade_st:.3f}:d=0.35,apad=whole_dur={total:.3f}[a0]")
+    if args.vo:
+        d = int(n / FPS * 1000) + 300
+        cmd += ["-i", args.vo]
+        flt += (f";[2:a]aformat=sample_fmts=fltp:channel_layouts=stereo,adelay={d}|{d},"
+                f"apad=whole_dur={total:.3f}[v];[a0][v]amix=inputs=2:normalize=0:duration=first[a]")
+    else:
+        flt = flt.replace("[a0]", "[a]")
+    cmd += ["-filter_complex", flt, "-map", "0:v", "-map", "[a]", "-c:v", "copy",
+            "-c:a", "aac", "-b:a", "192k", "-ar", "44100", "-ac", "2",
+            "-t", f"{total:.3f}", "-movflags", "+faststart", args.output]
+    subprocess.run(cmd, check=True)
     Path(video_tmp).unlink()
     print(f"footage frames: {n} ({src_dur:.2f}s)  end card: {total_end} frames  total: {total:.2f}s")
 
