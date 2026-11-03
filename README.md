@@ -39,17 +39,23 @@ including a bounce-in and exit. Pop-ups never overlap (enforced by an assertion)
 | KAIN REJECT KILANG – RM1.00 / METER | "kira tebal 1m, seringgit saja" | 21.15 s | 21.10 – 22.95 s |
 | SARUNG BANTAL (4 HELAI) – RM10.00 | "abang akak sarung bantal ni 4 helai, RM10" | 24.30 s | 24.25 – 26.10 s |
 | TILAM TOTO – RM29.00 | "Tilam Toto ni harga, dia RM29 saja" | 27.10 s | 27.05 – 28.90 s |
-| TILAM SINGLE – RM39.00 | "Tilam single RM39" | 29.60 s | 29.55 – 31.40 s |
+| TILAM SINGLE – RM39.00, then TILAM SINGLE – AMBIL 3 / RM100.00 | "Tilam single RM39" → "ambil tiga, seratus" (3 for RM100) | 29.60 s / 30.50 s | 29.55 – 32.00 s (same card, price swaps at 30.5 s) |
 | BANTAL PELUK – RM15.00 | "pantai [bantal] peluk harga paling murah RM15" | 34.40 s | 34.35 – 36.20 s |
 
-Not shown: "ambil RM tiga seratus" (~30.3 s, over the Tilam Single pop-up). The
-caption wording is unclear (3 for RM100? RM300?). Add it to `POPUPS` once confirmed.
 Product names are taken from the captions and the items on screen; check the
 "6 BIJI BANTAL" and "SARUNG BANTAL (4 HELAI)" labels.
 
 Style: white ExtraBold product name above a yellow Black price with a red
 outline, on a small translucent navy card centred at y = 1385 (above the
 burned-in captions and the platform UI zone).
+
+## Persistent date / location label
+
+Small two-line text, top-centre (y ≈ 205): `7 & 8 NOV 2026` /
+`DEWAN SERBAGUNA KAMPUNG TERSUSUN, TAWAS TAMBAHAN, IPOH`. Visible 0.3 – 3.85 s
+and 11.0 – 46.9 s; hidden 3.85 – 10.9 s while the big intro banners (same
+information) are on screen, and replaced by the end card afterwards.
+Configure in `LABEL_LINES` / `LABEL_SHOW`.
 
 ## Audio
 

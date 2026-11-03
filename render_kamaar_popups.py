@@ -38,7 +38,8 @@ SS = 2  # supersampling factor for sprites
 #   27.10  "Tilam Toto ni harga, dia RM29 saja"
 #   29.60  "Tilam single RM39"
 #   34.40  "bantal peluk harga paling murah RM15"
-# NOT shown: "ambil RM tiga seratus" (~30.3 s) - wording unclear, see README.
+#   30.50  "ambil RM tiga seratus" = 3 for RM100 -> same Tilam Single card, the
+#          price swaps in place (no second pop-up, so nothing overlaps)
 # --------------------------------------------------------------------------
 POPUP_DURATION = 1.85  # total on-screen time incl. bounce-in and exit
 POPUPS = [
@@ -48,7 +49,8 @@ POPUPS = [
     dict(name="KAIN REJECT KILANG", price="RM1.00", suffix="/ METER", t_in=21.10),
     dict(name="SARUNG BANTAL (4 HELAI)", price="RM10.00", suffix=None, t_in=24.25),
     dict(name="TILAM TOTO", price="RM29.00", suffix=None, t_in=27.05),
-    dict(name="TILAM SINGLE", price="RM39.00", suffix=None, t_in=29.55),
+    dict(name="TILAM SINGLE", price="RM39.00", suffix=None, t_in=29.55, dur=2.45,
+         then=dict(t=30.50, name="TILAM SINGLE – AMBIL 3", price="RM100.00", suffix=None)),
     dict(name="BANTAL PELUK", price="RM15.00", suffix=None, t_in=34.35),
 ]
 # Intro: big date / time / location banners, revealed line by line as the
@@ -70,6 +72,12 @@ INTRO = [
         ("KAMPUNG TERSUSUN", "ExtraBold", 58, "plain", 136, 8.45),
         ("TAWAS TAMBAHAN, IPOH", "Black", 52, "outline", 204, 9.20)]),
 ]
+# Persistent minimal label: date + location, small, top-centre. Hidden while the
+# big intro banners (same info) are on screen, and replaced by the end card.
+LABEL_LINES = [("7 & 8 NOV 2026", "ExtraBold", 36, "Y"),
+               ("DEWAN SERBAGUNA KAMPUNG TERSUSUN, TAWAS TAMBAHAN, IPOH", "Bold", 24, "W")]
+LABEL_CY = 205
+LABEL_SHOW = [(0.3, 3.85), (11.0, 46.9)]
 POPUP_CENTER_Y = 1385  # lower-middle: above the burned-in captions (~y1650)
 END_CARD_SECONDS = 5.5
 
@@ -94,7 +102,7 @@ def downscale(img):
     return img.resize((img.width // SS, img.height // SS), Image.LANCZOS)
 
 
-def popup_sprite(name, price, suffix):
+def popup_sprite(name, price, suffix, min_w=560):
     """Rounded navy card: product name (white) above price (yellow, red outline)."""
     nsize = 50
     while True:
@@ -117,7 +125,7 @@ def popup_sprite(name, price, suffix):
     name_w = f_name.getlength(name)
     pad_x = 56 * SS
     card_w = int(max(name_w, price_w) + 2 * pad_x)
-    card_w = max(card_w, 560 * SS)
+    card_w = max(card_w, min_w * SS)
     card_h = 222 * SS
     m = 44 * SS  # margin for shadow
     sprite = Image.new("RGBA", (card_w + 2 * m, card_h + 2 * m), (0, 0, 0, 0))
@@ -206,13 +214,13 @@ def ease_out_cubic(x):
     return 1 - (1 - x) ** 3
 
 
-def popup_state(t):
+def popup_state(t, dur=POPUP_DURATION):
     """t = seconds since pop-up start -> (scale, opacity) or None when off."""
-    if t < 0 or t >= POPUP_DURATION:
+    if t < 0 or t >= dur:
         return None
     s = spring(t)
     a = min(1.0, t / 0.10)
-    out_start = POPUP_DURATION - 0.18
+    out_start = dur - 0.18
     if t > out_start:
         k = (t - out_start) / 0.18
         s *= 1 - 0.12 * k
@@ -229,6 +237,43 @@ def paste(frame, sprite, cx, cy, scale=1.0, opacity=1.0, dy=0):
     if opacity < 1:
         alpha = alpha.point(lambda v: int(v * opacity))
     frame.paste(sp.convert("RGB"), (int(cx - w / 2), int(cy - h / 2 + dy)), alpha)
+
+
+# --------------------------------------------------------------------------
+# persistent date / location label
+# --------------------------------------------------------------------------
+def build_label():
+    colors = {"Y": YELLOW, "W": WHITE}
+    parts = []
+    for text, weight, size, col in LABEL_LINES:
+        while True:
+            sp = text_sprite(text, weight, size, colors[col], stroke=3,
+                             stroke_fill=(0, 0, 0, 255), tracking=1, pad=8)
+            if sp.width <= 1000 or size < 16:
+                break
+            size -= 1
+        parts.append(sp)
+    gap = -6
+    w = max(p.width for p in parts)
+    h = sum(p.height for p in parts) + gap * (len(parts) - 1)
+    out = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+    y = 0
+    for sp in parts:
+        out.alpha_composite(sp, ((w - sp.width) // 2, y))
+        y += sp.height + gap
+    # soft dark shadow for legibility on bright backgrounds
+    sh = Image.new("RGBA", out.size, (0, 0, 0, 0))
+    a = out.getchannel("A").filter(ImageFilter.GaussianBlur(5)).point(lambda v: int(v * 0.6))
+    sh.putalpha(a)
+    return Image.alpha_composite(sh, out)
+
+
+def label_alpha(t):
+    best = 0.0
+    for start, end in LABEL_SHOW:
+        best = max(best, min(1.0, max(0.0, (t - start) / 0.3)) *
+                   min(1.0, max(0.0, (end - t) / 0.3)))
+    return best
 
 
 # --------------------------------------------------------------------------
@@ -401,10 +446,21 @@ def main():
 
     # sanity: pop-ups must never overlap (previous one is removed first)
     for a, b in zip(POPUPS, POPUPS[1:]):
-        assert a["t_in"] + POPUP_DURATION <= b["t_in"], "pop-ups overlap"
+        assert a["t_in"] + a.get("dur", POPUP_DURATION) <= b["t_in"], "pop-ups overlap"
 
-    sprites = [popup_sprite(p["name"], p["price"], p["suffix"]) for p in POPUPS]
+    sprites = []  # per pop-up: [(start offset in s, sprite), ...]
+    for p in POPUPS:
+        phases = [(0.0, p["name"], p["price"], p["suffix"])]
+        if "then" in p:
+            th = p["then"]
+            phases.append((th["t"] - p["t_in"], th["name"], th["price"], th["suffix"]))
+        sp = [popup_sprite(n, pr, sf) for _, n, pr, sf in phases]
+        if len(sp) > 1:  # keep the card the same size across the swap
+            mw = max(x.width for x in sp) // 1 - 2 * BANNER_M
+            sp = [popup_sprite(n, pr, sf, min_w=mw) for _, n, pr, sf in phases]
+        sprites.append([(ph[0], x) for ph, x in zip(phases, sp)])
     intro = build_intro()
+    label = build_label()
     src_dur = probe_duration(args.input)
     video_tmp = str(Path(args.output).with_suffix(".video.mp4"))
     fbytes = W * H * 3
@@ -422,7 +478,9 @@ def main():
                  9.7: "04_intro_full", 11.2: "05_intro_gone",
                  12.1: "06_before_bantal", 12.6: "07_bantal", 14.3: "08_removed",
                  16.3: "09_6biji", 19.1: "10_kain1", 21.5: "11_kain2",
-                 24.9: "12_sarung", 27.4: "13_toto", 30.0: "14_single", 34.9: "15_peluk"}
+                 24.9: "12_sarung", 27.4: "13_toto", 30.0: "14_single", 34.9: "15_peluk",
+                 31.0: "16_single3for100", 1.5: "17_label_start", 41.0: "18_label_late",
+                 3.6: "19_label_fadeout"}
     preview_frames = {round(t * FPS): n for t, n in preview_t.items()}
     pdir = Path(args.preview_dir) if args.preview_dir else None
     if pdir:
@@ -436,12 +494,19 @@ def main():
             break
         t = n / FPS
         arr = None
-        for p, sp in zip(POPUPS, sprites):
-            st = popup_state(t - p["t_in"])
+        for p, phases in zip(POPUPS, sprites):
+            lt = t - p["t_in"]
+            st = popup_state(lt, p.get("dur", POPUP_DURATION))
             if st:
                 if arr is None:
                     arr = Image.frombuffer("RGB", (W, H), buf, "raw", "RGB", 0, 1)
-                paste(arr, sp, W / 2, POPUP_CENTER_Y, st[0], st[1])
+                sp = [x for off, x in phases if lt >= off][-1]
+                scale = st[0]
+                if len(phases) > 1:  # small pulse when the price swaps
+                    k = lt - phases[1][0]
+                    if 0 <= k < 0.3:
+                        scale *= 1 + 0.07 * math.sin(math.pi * k / 0.3)
+                paste(arr, sp, W / 2, POPUP_CENTER_Y, scale, st[1])
                 break
         if arr is None:
             layers = intro_layers(intro, t)
@@ -449,6 +514,11 @@ def main():
                 arr = Image.frombuffer("RGB", (W, H), buf, "raw", "RGB", 0, 1)
                 for sp, cx, cy, sc, op in layers:
                     paste(arr, sp, cx, cy, sc, op)
+        la = label_alpha(t)
+        if la > 0.003:
+            if arr is None:
+                arr = Image.frombuffer("RGB", (W, H), buf, "raw", "RGB", 0, 1)
+            paste(arr, label, W / 2, LABEL_CY, 1.0, la)
         if arr is not None:
             out = arr.tobytes()
         else:
