@@ -3,12 +3,18 @@
 Synchronized price pop-ups + event-details end card for the Ipoh clearance-sale
 video (9:16, 1080 × 1920, TikTok / Facebook Reels).
 
-- `output/kamaar_price_popups.mp4` – final video (52.5 s)
+- `output/kamaar_price_popups.mp4` – final video, Full HD 1080 × 1920 (52.5 s)
+- `output/kamaar_price_popups_2k.mp4` – same video in 2K, 1440 × 2560
 - `render_kamaar_popups.py` – renderer (`ffmpeg`, Pillow, numpy)
 
 ```
-python3 render_kamaar_popups.py INPUT.mp4 output/kamaar_price_popups.mp4 [--logo logo.png] [--vo vo.mp3]
+python3 render_kamaar_popups.py INPUT.mp4 output/kamaar_price_popups.mp4 [--logo logo.png] [--vo vo.mp3] [--width 1440]
 ```
+
+`--width 1080` (default) renders Full HD, `--width 1440` renders 2K (1440 × 2560).
+All graphics (pop-ups, text, banners, effects) are rendered natively at the output
+resolution, so they are sharp in 2K. The presenter footage was shot at 1080 × 1920,
+so it is upscaled (Lanczos + a light sharpen) – 2K cannot add real detail to it.
 
 ## Intro hook (0 – 3.9 s): "KAMPUNG TAWAS, IPOH"
 

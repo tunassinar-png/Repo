@@ -23,6 +23,16 @@ import numpy as np
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
 W, H, FPS = 1080, 1920, 30
+# Everything is laid out in 1080x1920 "design units". K scales the whole render to
+# the output size (K = 4/3 -> 1440x2560, "2K"); sprites are built natively at K.
+K = 1.0
+OW, OH = W, H
+
+
+def set_output_width(width):
+    global K, OW, OH
+    K = width / W
+    OW, OH = int(round(W * K)) // 2 * 2, int(round(H * K)) // 2 * 2
 SS = 2  # supersampling factor for sprites
 
 YELLOW = (255, 212, 0)
@@ -131,7 +141,14 @@ def font(weight, size):
 # sprite helpers
 # --------------------------------------------------------------------------
 def downscale(img):
-    return img.resize((img.width // SS, img.height // SS), Image.LANCZOS)
+    """Sprites are drawn at SS px per design unit -> resize to K px per unit."""
+    return img.resize((max(1, round(img.width * K / SS)), max(1, round(img.height * K / SS))),
+                      Image.LANCZOS)
+
+
+def lu(sprite):
+    """Sprite width in design units."""
+    return sprite.width / K
 
 
 def popup_sprite(name, price, suffix, min_w=560, price_size=118, max_name_w=640):
@@ -224,27 +241,29 @@ def text_sprite(text, weight, size, fill, stroke=0, stroke_fill=None, tracking=0
 
 def pill_sprite(text, weight, size, text_fill, fill, outline=None, px=44, py=22, tracking=0):
     t = text_sprite(text, weight, size, text_fill, tracking=tracking, pad=2)
-    w, h = t.width + 2 * px, t.height + 2 * py
+    pxk, pyk = round(px * K), round(py * K)
+    w, h = t.width + 2 * pxk, t.height + 2 * pyk
     img = Image.new("RGBA", (w * SS, h * SS), (0, 0, 0, 0))
     d = ImageDraw.Draw(img)
     d.rounded_rectangle((0, 0, w * SS - 1, h * SS - 1), (h // 2) * SS, fill=fill,
-                        outline=outline, width=3 * SS if outline else 0)
-    img = downscale(img)
-    img.alpha_composite(t, (px, py))
+                        outline=outline, width=round(3 * K * SS) if outline else 0)
+    img = img.resize((w, h), Image.LANCZOS)
+    img.alpha_composite(t, (pxk, pyk))
     return img
 
 
 def logo_sprite(logo_path):
     if logo_path and Path(logo_path).exists():
         lg = Image.open(logo_path).convert("RGBA")
-        scale = min(620 / lg.width, 260 / lg.height)
+        scale = min(620 * K / lg.width, 260 * K / lg.height)
         return lg.resize((int(lg.width * scale), int(lg.height * scale)), Image.LANCZOS)
     # typeset stand-in (thin, wide-tracked caps like the shirt logo)
     k = text_sprite("KAMAAR", "Light", 104, WHITE, tracking=26, pad=6)
     b = text_sprite("BEDDINGS", "Regular", 36, (214, 178, 96), tracking=30, pad=6)
-    out = Image.new("RGBA", (max(k.width, b.width) + 20, k.height + b.height + 4), (0, 0, 0, 0))
+    out = Image.new("RGBA", (max(k.width, b.width) + round(20 * K), k.height + b.height + round(4 * K)),
+                    (0, 0, 0, 0))
     out.alpha_composite(k, ((out.width - k.width) // 2, 0))
-    out.alpha_composite(b, ((out.width - b.width) // 2, k.height - 4))
+    out.alpha_composite(b, ((out.width - b.width) // 2, k.height - round(4 * K)))
     return out
 
 
@@ -283,7 +302,7 @@ def paste(frame, sprite, cx, cy, scale=1.0, opacity=1.0, dy=0):
     alpha = sp.getchannel("A")
     if opacity < 1:
         alpha = alpha.point(lambda v: int(v * opacity))
-    frame.paste(sp.convert("RGB"), (int(cx - w / 2), int(cy - h / 2 + dy)), alpha)
+    frame.paste(sp.convert("RGB"), (int(cx * K - w / 2), int((cy + dy) * K - h / 2)), alpha)
 
 
 # --------------------------------------------------------------------------
@@ -296,11 +315,11 @@ def build_label():
         while True:
             sp = text_sprite(text, weight, size, colors[col], stroke=3,
                              stroke_fill=(0, 0, 0, 255), tracking=1, pad=8)
-            if sp.width <= 1000 or size < 16:
+            if lu(sp) <= 1000 or size < 16:
                 break
             size -= 1
         parts.append(sp)
-    gap = -6
+    gap = -round(6 * K)
     w = max(p.width for p in parts)
     h = sum(p.height for p in parts) + gap * (len(parts) - 1)
     out = Image.new("RGBA", (w, h), (0, 0, 0, 0))
@@ -310,7 +329,7 @@ def build_label():
         y += sp.height + gap
     # soft dark shadow for legibility on bright backgrounds
     sh = Image.new("RGBA", out.size, (0, 0, 0, 0))
-    a = out.getchannel("A").filter(ImageFilter.GaussianBlur(5)).point(lambda v: int(v * 0.6))
+    a = out.getchannel("A").filter(ImageFilter.GaussianBlur(5 * K)).point(lambda v: int(v * 0.6))
     sh.putalpha(a)
     return Image.alpha_composite(sh, out)
 
@@ -351,7 +370,7 @@ def build_intro():
     for tag, t_in, h, lines in INTRO:
         bg = banner_bg(h)
         chip = pill_sprite(tag, "Black", 24, WHITE, RED + (255,), px=22, py=8, tracking=3)
-        bg.alpha_composite(chip, (BANNER_M + 34, BANNER_M - chip.height // 2))
+        bg.alpha_composite(chip, (round((BANNER_M + 34) * K), round(BANNER_M * K) - chip.height // 2))
         ls = []
         for text, weight, size, style, cy, t_line in lines:
             if style == "pill_w":
@@ -365,14 +384,14 @@ def build_intro():
                 col = WHITE if style == "plain" else YELLOW
                 while True:
                     sp = text_sprite(text, weight, size, col, tracking=1, **kw)
-                    if sp.width <= BANNER_W - 80 + 48 or size < 30:
+                    if lu(sp) <= BANNER_W - 80 + 48 or size < 30:
                         break
                     size -= 2
             ls.append([sp, cy, t_line, 0, style])
         # pills that share a row are centred as a group
         pills = [l for l in ls if l[4].startswith("pill")]
         if pills:
-            gap = 28
+            gap = round(28 * K)
             total = sum(l[0].width for l in pills) + gap * (len(pills) - 1)
             x = -total / 2
             for l in pills:
@@ -398,7 +417,7 @@ def intro_layers(banners, t):
             scale *= 1 - 0.08 * k
             alpha *= 1 - k
         sp = b["bg"].copy()
-        top = BANNER_M
+        top = round(BANNER_M * K)
         for lsp, rel_y, t_line, dx in b["lines"]:
             k = ease_out_cubic((t - t_line) / 0.30)
             if k <= 0:
@@ -408,7 +427,7 @@ def intro_layers(banners, t):
                 layer = lsp.copy()
                 layer.putalpha(lsp.getchannel("A").point(lambda v, k=k: int(v * k)))
             sp.alpha_composite(layer, (sp.width // 2 - layer.width // 2 + dx,
-                                       int(top + rel_y - layer.height / 2 + (1 - k) * 14)))
+                                       int(top + (rel_y + (1 - k) * 14) * K - layer.height / 2)))
         out.append((sp, W / 2, b["cy"], scale, alpha))
     return out
 
@@ -418,13 +437,13 @@ def intro_layers(banners, t):
 # --------------------------------------------------------------------------
 SPARK_COLORS = [YELLOW, WHITE, RED, (255, 160, 0), (255, 235, 150)]
 SCRIM_H = 950
-SCRIM_GRAD = ((1 - np.arange(SCRIM_H) / SCRIM_H) ** 1.4)[:, None, None]
 OVERLAY_H = 1300
 
 
 def with_glow(sp, color, radius=22, strength=0.9):
     """Soft coloured glow sprite (same centre as sp, bigger canvas)."""
-    pad = radius * 3
+    radius = radius * K
+    pad = int(radius * 3)
     a = Image.new("L", (sp.width + 2 * pad, sp.height + 2 * pad), 0)
     a.paste(sp.getchannel("A"), (pad, pad))
     a = a.filter(ImageFilter.GaussianBlur(radius)).point(lambda v: min(255, int(v * 1.9 * strength)))
@@ -481,7 +500,7 @@ def build_hook():
                 sp = text_sprite(h["text"], "Black", size, h["fill"], stroke=h["stroke"],
                                  stroke_fill=RED + (255,) if h["fill"] != RED else NAVY + (255,),
                                  tracking=1)
-                if sp.width <= 1000 or size < 40:
+                if lu(sp) <= 1000 or size < 40:
                     break
                 size -= 2
             glow = with_glow(sp, h["glow"], radius=26, strength=1.15)
@@ -531,11 +550,11 @@ def shake_frame(img, t):
             chroma = max(chroma, ev["chroma"] * math.exp(-lt * 12))
     if amp >= 0.5 or punch >= 0.003:
         z = 1 + punch + 0.0021 * amp  # zoom margin always >= the shake offset
-        img = img.transform((W, H), Image.AFFINE,
-                            (1 / z, 0, W / 2 * (1 - 1 / z) + dx, 0, 1 / z, H / 2 * (1 - 1 / z) + dy),
+        img = img.transform((OW, OH), Image.AFFINE,
+                            (1 / z, 0, OW / 2 * (1 - 1 / z) + dx * K, 0, 1 / z, OH / 2 * (1 - 1 / z) + dy * K),
                             resample=Image.BICUBIC)
     if chroma >= 1:
-        sh = int(chroma)
+        sh = max(1, int(chroma * K))
         arr = np.array(img.convert("RGB"))
         arr[..., 0] = np.roll(arr[..., 0], sh, axis=1)
         arr[..., 2] = np.roll(arr[..., 2], -sh, axis=1)
@@ -547,8 +566,10 @@ def scrim_frame(img, t):
     a = 0.55 * min(1.0, max(0.0, (t - 0.9) / 0.4)) * min(1.0, max(0.0, (11.0 - t) / 0.4))
     if a < 0.005:
         return img
+    n = int(SCRIM_H * K)
+    grad = ((1 - np.arange(n) / n) ** 1.4)[:, None, None]
     arr = np.array(img)
-    arr[:SCRIM_H] = (arr[:SCRIM_H] * (1 - a * SCRIM_GRAD)).astype(np.uint8)
+    arr[:n] = (arr[:n] * (1 - a * grad)).astype(np.uint8)
     return Image.fromarray(arr)
 
 
@@ -637,13 +658,15 @@ def intro_fx(img, t, banners, hook):
     # two counter-rotating light-ray layers behind the hook
     if 1.72 <= t <= HOOK_OUT + 0.25:
         ra = min(1.0, (t - 1.72) / 0.25) * ex_a
-        paste(img, hook["rays"].rotate(-(t - 1.72) * 40, resample=Image.BILINEAR), W / 2, 500, 1.0, ra * 0.38)
-        paste(img, hook["rays2"].rotate((t - 1.72) * 28, resample=Image.BILINEAR), W / 2, 500, 1.0, ra * 0.22)
+        paste(img, hook["rays"].rotate(-(t - 1.72) * 40, resample=Image.BILINEAR), W / 2, 500, K, ra * 0.38)
+        paste(img, hook["rays2"].rotate((t - 1.72) * 28, resample=Image.BILINEAR), W / 2, 500, K, ra * 0.22)
     fa = flash_alpha(t)
     if fa > 0.01:
         img = Image.blend(img.convert("RGB"), Image.new("RGB", img.size, (255, 246, 215)), min(fa, 0.92))
     ov = spark_layer(t)
     if ov is not None:
+        if K != 1.0:
+            ov = ov.resize((OW, round(OVERLAY_H * K)), Image.BILINEAR)
         img.paste(ov.convert("RGB"), (0, 0), ov.getchannel("A"))
     # hook texts
     if t < HOOK_OUT + 0.3:
@@ -687,17 +710,17 @@ def intro_fx(img, t, banners, hook):
 # end card
 # --------------------------------------------------------------------------
 def build_end_card(last_frame, logo_path):
-    bg = last_frame.filter(ImageFilter.GaussianBlur(26))
+    bg = last_frame.filter(ImageFilter.GaussianBlur(26 * K))
     bg = Image.blend(bg, Image.new("RGB", bg.size, (14, 30, 84)), 0.78)
     # subtle vignette
-    yy, xx = np.mgrid[0:H, 0:W]
-    v = 1 - 0.30 * (((xx - W / 2) / (W / 2)) ** 2 + ((yy - H / 2) / (H / 2)) ** 2) / 2
+    yy, xx = np.mgrid[0:OH, 0:OW]
+    v = 1 - 0.30 * (((xx - OW / 2) / (OW / 2)) ** 2 + ((yy - OH / 2) / (OH / 2)) ** 2) / 2
     bg = Image.fromarray((np.asarray(bg) * v[..., None]).astype(np.uint8))
 
     def fit(text, weight, size, fill, max_w=940, **kw):
         while True:
             s = text_sprite(text, weight, size, fill, **kw)
-            if s.width <= max_w + 48 or size < 30:
+            if lu(s) <= max_w + 48 or size < 30:
                 return s
             size -= 2
 
@@ -708,8 +731,9 @@ def build_end_card(last_frame, logo_path):
     els.append((pill_sprite("9 PAGI – 10 MALAM", "ExtraBold", 58, WHITE,
                             (255, 255, 255, 30), outline=YELLOW + (255,), tracking=3),
                 715, 0.95, "slide"))
-    div = Image.new("RGBA", (200, 8), (0, 0, 0, 0))
-    ImageDraw.Draw(div).rounded_rectangle((0, 0, 199, 7), 4, fill=YELLOW + (255,))
+    dw, dh = round(200 * K), round(8 * K)
+    div = Image.new("RGBA", (dw, dh), (0, 0, 0, 0))
+    ImageDraw.Draw(div).rounded_rectangle((0, 0, dw - 1, dh - 1), dh // 2, fill=YELLOW + (255,))
     els.append((div, 835, 1.20, "slide"))
     els.append((fit("DEWAN SERBAGUNA", "ExtraBold", 66, WHITE, tracking=2), 925, 1.30, "slide"))
     els.append((fit("KAMPUNG TERSUSUN", "ExtraBold", 66, WHITE, tracking=2), 1010, 1.45, "slide"))
@@ -756,10 +780,14 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("input")
     ap.add_argument("output")
+    ap.add_argument("--width", type=int, default=1080,
+                    help="output width (1080 = Full HD 1080x1920, 1440 = 2K 1440x2560)")
     ap.add_argument("--logo", help="optional official logo PNG (transparent background)")
     ap.add_argument("--vo", help="optional voice-over audio file played on the end card")
     ap.add_argument("--preview-dir", help="also dump key frames as PNG here")
     args = ap.parse_args()
+
+    set_output_width(args.width)
 
     # sanity: pop-ups must never overlap (previous one is removed first)
     for a, b in zip(POPUPS, POPUPS[1:]):
@@ -777,15 +805,18 @@ def main():
     label = build_label()
     src_dur = probe_duration(args.input)
     video_tmp = str(Path(args.output).with_suffix(".video.mp4"))
-    fbytes = W * H * 3
+    fbytes = OW * OH * 3
+    # footage is upscaled with Lanczos (+ a light sharpen) when OW != W; overlays are native
+    vf = f"fps={FPS}" + (f",scale={OW}:{OH}:flags=lanczos+accurate_rnd,unsharp=5:5:0.45:5:5:0.0" if OW != W else "")
 
     dec = subprocess.Popen(
-        ["ffmpeg", "-v", "error", "-i", args.input, "-an", "-vf", f"fps={FPS}",
+        ["ffmpeg", "-v", "error", "-i", args.input, "-an", "-vf", vf,
          "-f", "rawvideo", "-pix_fmt", "rgb24", "-"], stdout=subprocess.PIPE)
     enc = subprocess.Popen(
         ["ffmpeg", "-v", "error", "-y", "-f", "rawvideo", "-pix_fmt", "rgb24",
-         "-s", f"{W}x{H}", "-r", str(FPS), "-i", "-", "-c:v", "libx264",
-         "-preset", "medium", "-crf", "22", "-pix_fmt", "yuv420p",
+         "-s", f"{OW}x{OH}", "-r", str(FPS), "-i", "-", "-c:v", "libx264",
+         "-preset", "medium" if OW <= W else "slow", "-crf", "22" if OW <= W else "20",
+         "-maxrate", "30M", "-bufsize", "60M", "-pix_fmt", "yuv420p",
          "-movflags", "+faststart", video_tmp], stdin=subprocess.PIPE)
 
     preview_t = {0.07: "00_open_flash", 1.77: "20_impact1", 2.00: "21_after1", 2.50: "22_impact2", 10.07: "23_impact_badge", 1.3: "00a_chip", 1.80: "00b_slam1", 2.1: "00c_slam1_settled",
@@ -815,7 +846,7 @@ def main():
             st = popup_state(lt, p.get("dur", POPUP_DURATION))
             if st:
                 if arr is None:
-                    arr = Image.frombuffer("RGB", (W, H), buf, "raw", "RGB", 0, 1)
+                    arr = Image.frombuffer("RGB", (OW, OH), buf, "raw", "RGB", 0, 1)
                 sp = [x for off, x in phases if lt >= off][-1]
                 scale = st[0]
                 if len(phases) > 1:  # bounce when the card swaps to the bigger one
@@ -825,18 +856,18 @@ def main():
                 paste(arr, sp, W / 2, POPUP_CENTER_Y, scale, st[1])
                 break
         if arr is None and t < 11.1:
-            arr = intro_fx(Image.frombuffer("RGB", (W, H), buf, "raw", "RGB", 0, 1), t, intro, hook)
+            arr = intro_fx(Image.frombuffer("RGB", (OW, OH), buf, "raw", "RGB", 0, 1), t, intro, hook)
         la = label_alpha(t)
         if la > 0.003:
             if arr is None:
-                arr = Image.frombuffer("RGB", (W, H), buf, "raw", "RGB", 0, 1)
+                arr = Image.frombuffer("RGB", (OW, OH), buf, "raw", "RGB", 0, 1)
             paste(arr, label, W / 2, LABEL_CY, 1.0, la)
         if arr is not None:
             out = arr.tobytes()
         else:
             out = buf
         if pdir and n in preview_frames:
-            Image.frombytes("RGB", (W, H), out).save(pdir / f"{preview_frames[n]}.png")
+            Image.frombytes("RGB", (OW, OH), out).save(pdir / f"{preview_frames[n]}.png")
         enc.stdin.write(out)
         last = buf
         n += 1
@@ -845,7 +876,7 @@ def main():
         sys.exit("no frames decoded")
 
     # end card
-    last_img = Image.frombytes("RGB", (W, H), last)
+    last_img = Image.frombytes("RGB", (OW, OH), last)
     render = build_end_card(last_img, args.logo)
     total_end = int(END_CARD_SECONDS * FPS)
     end_prev = {int(1.0 * FPS): "g_end_1s", int(2.2 * FPS): "h_end_2s",
