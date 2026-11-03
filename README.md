@@ -15,8 +15,9 @@ python3 render_kamaar_popups.py INPUT.mp4 output/kamaar_price_popups.mp4 [--logo
 Synced to "Kepada warga Kampung Tawas, Ipoh dan kawasan sekitar": a red
 `KEPADA WARGA` chip (1.00 s), `KAMPUNG TAWAS` slams in (1.72 s), then a huge
 `IPOH` (2.47 s), then `& KAWASAN SEKITAR` (3.00 s); all leave at 3.6 s.
-Impact effects on the slams: screen flash, camera shake, spark burst, shock
-ring, rotating light rays and a text shine sweep. A soft dark scrim sits over the
+Impact effects on the slams: strong camera shake + punch zoom, RGB split, screen
+flash, radial speed lines, spark/streak bursts, double shock ring, two
+counter-rotating light-ray layers, zoom-trail afterimages and a text shine sweep. A soft dark scrim sits over the
 top of the frame (0.9 – 11 s) for legibility. Everything is configured in
 `HOOK` / `EVENTS` / `BADGE`.
 
@@ -49,13 +50,13 @@ including a bounce-in and exit. Pop-ups never overlap (enforced by an assertion)
 | 6 BIJI BANTAL – RM29.00 | "ambil 6 biji bantal macam ni, ni hanya RM29" | 15.85 s | 15.80 – 17.65 s |
 | KAIN REJECT KILANG – RM1.00 / METER | "kain reject kilang, 1m, seringgit" | 18.75 s | 18.70 – 20.55 s |
 | KAIN REJECT KILANG – RM1.00 / METER | "kira tebal 1m, seringgit saja" | 21.15 s | 21.10 – 22.95 s |
-| SARUNG BANTAL (4 HELAI) – RM10.00 | "abang akak sarung bantal ni 4 helai, RM10" | 24.30 s | 24.25 – 26.10 s |
+| SARUNG BANTAL **4** HELAI – RM10.00 (big "4") | "abang akak sarung bantal ni 4 helai, RM10" | 24.30 s | 24.25 – 26.10 s |
 | TILAM TOTO – RM29.00 | "Tilam Toto ni harga, dia RM29 saja" | 27.10 s | 27.05 – 28.90 s |
-| TILAM SINGLE – RM39.00, then TILAM SINGLE – AMBIL 3 / RM100.00 | "Tilam single RM39" → "ambil tiga, seratus" (3 for RM100) | 29.60 s / 30.50 s | 29.55 – 32.00 s (same card, price swaps at 30.5 s) |
+| TILAM SINGLE – RM39.00, then TILAM SINGLE **3 BIJI** / **RM100** (large card) | "Tilam single RM39" → "ambil tiga, seratus" (3 for RM100) | 29.60 s / 30.50 s | 29.55 – 32.20 s (card swaps to the big one at 30.5 s) |
 | BANTAL PELUK – RM15.00 | "pantai [bantal] peluk harga paling murah RM15" | 34.40 s | 34.35 – 36.20 s |
 
-Product names are taken from the captions and the items on screen; check the
-"6 BIJI BANTAL" and "SARUNG BANTAL (4 HELAI)" labels.
+Product names are taken from the captions and the items on screen; "SARUNG
+BANTAL 4 HELAI" is confirmed, check the "6 BIJI BANTAL" label.
 
 Style: white ExtraBold product name above a yellow Black price with a red
 outline, on a small translucent navy card centred at y = 1385 (above the

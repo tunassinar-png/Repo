@@ -53,10 +53,13 @@ POPUPS = [
     dict(name="6 BIJI BANTAL", price="RM29.00", suffix=None, t_in=15.80),
     dict(name="KAIN REJECT KILANG", price="RM1.00", suffix="/ METER", t_in=18.70),
     dict(name="KAIN REJECT KILANG", price="RM1.00", suffix="/ METER", t_in=21.10),
-    dict(name="SARUNG BANTAL (4 HELAI)", price="RM10.00", suffix=None, t_in=24.25),
+    dict(name=[("SARUNG BANTAL ", 1.0, "W"), ("4", 2.3, "Y"), (" HELAI", 1.0, "W")],
+         price="RM10.00", suffix=None, t_in=24.25),
     dict(name="TILAM TOTO", price="RM29.00", suffix=None, t_in=27.05),
-    dict(name="TILAM SINGLE", price="RM39.00", suffix=None, t_in=29.55, dur=2.45,
-         then=dict(t=30.50, name="TILAM SINGLE – AMBIL 3", price="RM100.00", suffix=None)),
+    dict(name="TILAM SINGLE", price="RM39.00", suffix=None, t_in=29.55, dur=2.65,
+         then=dict(t=30.50, name=[("TILAM SINGLE  ", 1.0, "W"), ("3 BIJI", 2.0, "Y")],
+                   price="RM100", suffix=None,
+                   opts=dict(price_size=150, max_name_w=840, min_w=700))),
     dict(name="BANTAL PELUK", price="RM15.00", suffix=None, t_in=34.35),
 ]
 # Intro: big date / time / location banners, revealed line by line as the
@@ -92,13 +95,18 @@ HOOK = [
 BADGE = dict(text="2 HARI SAHAJA!", t=10.00, cx=840, cy=692, angle=-5)  # VO "2 hari saja"
 # Impact events: screen flash, camera shake (px) and spark burst (cx, cy, n)
 EVENTS = [
-    dict(t=0.00, flash=0.50, shake=0),
-    dict(t=1.72, flash=0.55, shake=14, burst=(540, 420, 80), ring=True),
-    dict(t=2.47, flash=0.65, shake=20, burst=(540, 595, 100), ring=True),
-    dict(t=4.00, flash=0.22, shake=0, burst=(540, 267, 34)),
-    dict(t=6.55, flash=0.15, shake=0, burst=(760, 316, 24)),
-    dict(t=7.45, flash=0.22, shake=0, burst=(540, 509, 34)),
-    dict(t=10.00, flash=0.40, shake=12, burst=(840, 692, 60), ring=True),
+    dict(t=0.00, flash=0.60, shake=10),
+    dict(t=1.72, flash=0.85, shake=32, punch=0.10, chroma=10, ring=True, lines=True,
+         burst=(540, 420, 170)),
+    dict(t=2.10, flash=0.35, shake=14, punch=0.04, burst=(720, 420, 60)),   # "Tawas" beat
+    dict(t=2.47, flash=0.95, shake=42, punch=0.13, chroma=14, ring=True, lines=True,
+         burst=(540, 595, 220)),
+    dict(t=3.00, flash=0.25, shake=8),
+    dict(t=4.00, flash=0.40, shake=10, punch=0.03, burst=(540, 267, 70)),
+    dict(t=6.55, flash=0.30, shake=8, burst=(760, 316, 50)),
+    dict(t=7.45, flash=0.40, shake=12, punch=0.03, burst=(540, 509, 70)),
+    dict(t=10.00, flash=0.80, shake=34, punch=0.10, chroma=10, ring=True, lines=True,
+         burst=(840, 692, 150)),
 ]
 # Persistent minimal label: date + location, small, top-centre. Hidden while the
 # big intro banners (same info) are on screen, and replaced by the end card.
@@ -126,16 +134,25 @@ def downscale(img):
     return img.resize((img.width // SS, img.height // SS), Image.LANCZOS)
 
 
-def popup_sprite(name, price, suffix, min_w=560):
-    """Rounded navy card: product name (white) above price (yellow, red outline)."""
+def popup_sprite(name, price, suffix, min_w=560, price_size=118, max_name_w=640):
+    """Rounded navy card: product name (white) above price (yellow, red outline).
+
+    `name` is a string or a list of (text, size_factor, "W"|"Y") parts drawn on one
+    baseline, so a number can be made much bigger than the words around it.
+    """
+    parts = [(name, 1.0, "W")] if isinstance(name, str) else list(name)
+    colors = {"W": WHITE, "Y": YELLOW}
     nsize = 50
-    while True:
-        f_name = font("ExtraBold", nsize * SS)
-        if f_name.getlength(name) <= 640 * SS or nsize <= 36:
+    while True:  # shrink the name line until it fits
+        fonts = [font("ExtraBold" if c == "W" else "Black", int(nsize * f * SS))
+                 for _, f, c in parts]
+        name_w = sum(fn.getlength(t) for (t, _, _), fn in zip(parts, fonts))
+        if name_w <= max_name_w * SS or nsize <= 30:
             break
         nsize -= 2
+    name_cap = int(nsize * max(f for _, f, _ in parts) * 0.73)
     # shrink the price font until the content fits comfortably
-    size = 118
+    size = price_size
     while True:
         f_price = font("Black", size * SS)
         f_suf = font("Black", int(size * 0.42) * SS)
@@ -143,14 +160,16 @@ def popup_sprite(name, price, suffix, min_w=560):
         pw = f_price.getlength(price)
         sw = f_suf.getlength(suffix) if suffix else 0
         price_w = pw + (gap + sw if suffix else 0)
-        if price_w <= 600 * SS or size <= 90:
+        if price_w <= max(600, price_size * 4.4) * SS or size <= 90:
             break
         size -= 2
-    name_w = f_name.getlength(name)
+    price_cap = int(size * 0.73)
     pad_x = 56 * SS
     card_w = int(max(name_w, price_w) + 2 * pad_x)
     card_w = max(card_w, min_w * SS)
-    card_h = 222 * SS
+    base1_off = 42 + name_cap                  # baseline of the name line (1x px)
+    base2_off = base1_off + 26 + price_cap     # baseline of the price line
+    card_h = (base2_off + 32) * SS
     m = 44 * SS  # margin for shadow
     sprite = Image.new("RGBA", (card_w + 2 * m, card_h + 2 * m), (0, 0, 0, 0))
 
@@ -168,10 +187,14 @@ def popup_sprite(name, price, suffix, min_w=560):
     d.rounded_rectangle((cx - 62 * SS, m - 5 * SS, cx + 62 * SS, m + 5 * SS),
                         5 * SS, fill=RED + (255,))
 
-    base1 = m + 78 * SS
-    d.text((cx, base1), name, font=f_name, fill=WHITE, anchor="ms")
+    base1 = m + base1_off * SS
+    x = cx - name_w / 2
+    for (text, f, c), fn in zip(parts, fonts):
+        kw = dict(stroke_width=4 * SS, stroke_fill=RED) if c == "Y" else {}
+        d.text((x, base1), text, font=fn, fill=colors[c], anchor="ls", **kw)
+        x += fn.getlength(text)
 
-    base2 = base1 + 26 * SS + int(size * 0.73) * SS
+    base2 = m + base2_off * SS
     stroke = 4 * SS
     x0 = cx - price_w / 2
     d.text((x0, base2), price, font=f_price, fill=YELLOW, anchor="ls",
@@ -425,17 +448,17 @@ def paste_rot(frame, sprite, cx, cy, scale, opacity, angle):
     paste(frame, sprite.rotate(angle, resample=Image.BICUBIC, expand=True), cx, cy, scale, opacity)
 
 
-def build_rays():
+def build_rays(color=(255, 220, 70), step=20, width=9):
     n = 1500
     img = Image.new("RGBA", (n, n), (0, 0, 0, 0))
     d = ImageDraw.Draw(img)
     c = n / 2
-    for i in range(18):
-        a0 = math.radians(i * 20)
-        a1 = math.radians(i * 20 + 9)
+    for i in range(360 // step):
+        a0 = math.radians(i * step)
+        a1 = math.radians(i * step + width)
         d.polygon([(c, c), (c + c * 1.5 * math.cos(a0), c + c * 1.5 * math.sin(a0)),
                    (c + c * 1.5 * math.cos(a1), c + c * 1.5 * math.sin(a1))],
-                  fill=(255, 220, 70, 255))
+                  fill=color + (255,))
     yy, xx = np.mgrid[0:n, 0:n]
     rad = np.clip(1 - np.hypot(xx - c, yy - c) / c, 0, 1) ** 1.2
     a = np.asarray(img.getchannel("A")).astype(np.float32) * rad
@@ -461,22 +484,26 @@ def build_hook():
                 if sp.width <= 1000 or size < 40:
                     break
                 size -= 2
-            glow = with_glow(sp, h["glow"])
+            glow = with_glow(sp, h["glow"], radius=26, strength=1.15)
         items.append((h, sp, glow))
     badge = pill_sprite(BADGE["text"], "Black", 46, WHITE, RED + (255,), px=38, py=16, tracking=2)
     bglow = with_glow(badge, RED, radius=18)
-    return dict(items=items, badge=(badge, bglow), rays=build_rays())
+    return dict(items=items, badge=(badge, bglow), rays=build_rays(),
+                rays2=build_rays((255, 70, 50), step=30, width=12))
 
 
 def slam_state(lt):
-    """Huge -> normal scale with a small settle wobble. -> (scale, opacity)."""
+    """Huge -> normal scale, wobble and settle. -> (scale, opacity, angle_deg)."""
     if lt < 0:
         return None
-    if lt < 0.17:
-        s = 1.0 + 1.25 * (1 - ease_out_cubic(lt / 0.17))
+    if lt < 0.14:
+        s = 1.0 + 2.0 * (1 - ease_out_cubic(lt / 0.14))
     else:
-        s = 1.0 + 0.06 * math.exp(-(lt - 0.17) * 12) * math.sin((lt - 0.17) * 38)
-    return s, min(1.0, lt / 0.05)
+        s = 1.0 + 0.10 * math.exp(-(lt - 0.14) * 10) * math.sin((lt - 0.14) * 40)
+    ang = 5.0 * math.exp(-lt * 10) * math.sin(lt * 45)
+    if lt > 0.45:  # heartbeat while the text holds
+        s *= 1 + 0.022 * math.sin((lt - 0.45) * 15)
+    return s, min(1.0, lt / 0.04), ang
 
 
 def hook_exit(t):
@@ -487,20 +514,33 @@ def hook_exit(t):
 
 
 def shake_frame(img, t):
-    dx = dy = amp = 0.0
+    """Camera shake + punch zoom + RGB split on impact events."""
+    dx = dy = amp = punch = chroma = 0.0
     for ev in EVENTS:
         lt = t - ev["t"]
-        if ev.get("shake") and 0 <= lt < 0.5:
-            a = ev["shake"] * math.exp(-lt * 8)
-            dx += a * math.sin(lt * 58)
-            dy += a * math.cos(lt * 47 + 1)
+        if lt < 0:
+            continue
+        if ev.get("shake") and lt < 0.6:
+            a = ev["shake"] * math.exp(-lt * 7)
+            dx += a * math.sin(lt * 66)
+            dy += a * math.cos(lt * 53 + 1)
             amp += a
-    if amp < 0.5:
-        return img
-    z = 1 + 0.0016 * amp  # zoom margin always >= the shake offset
-    return img.transform((W, H), Image.AFFINE,
-                         (1 / z, 0, W / 2 * (1 - 1 / z) + dx, 0, 1 / z, H / 2 * (1 - 1 / z) + dy),
-                         resample=Image.BICUBIC)
+        if ev.get("punch") and lt < 0.5:
+            punch += ev["punch"] * math.exp(-lt * 9)
+        if ev.get("chroma") and lt < 0.3:
+            chroma = max(chroma, ev["chroma"] * math.exp(-lt * 12))
+    if amp >= 0.5 or punch >= 0.003:
+        z = 1 + punch + 0.0021 * amp  # zoom margin always >= the shake offset
+        img = img.transform((W, H), Image.AFFINE,
+                            (1 / z, 0, W / 2 * (1 - 1 / z) + dx, 0, 1 / z, H / 2 * (1 - 1 / z) + dy),
+                            resample=Image.BICUBIC)
+    if chroma >= 1:
+        sh = int(chroma)
+        arr = np.array(img.convert("RGB"))
+        arr[..., 0] = np.roll(arr[..., 0], sh, axis=1)
+        arr[..., 2] = np.roll(arr[..., 2], -sh, axis=1)
+        img = Image.fromarray(arr)
+    return img
 
 
 def scrim_frame(img, t):
@@ -522,42 +562,63 @@ def flash_alpha(t):
 
 
 def spark_layer(t):
+    """Sparks (dots + streaks), double shock ring and radial speed lines."""
     ov, d = None, None
     for ev in EVENTS:
         if "burst" not in ev:
             continue
         lt = t - ev["t"]
-        if lt < 0 or lt > 1.0:
+        if lt < 0 or lt > 1.1:
             continue
         if ov is None:
             ov = Image.new("RGBA", (W, OVERLAY_H), (0, 0, 0, 0))
             d = ImageDraw.Draw(ov)
         cx, cy, n = ev["burst"]
         rng = random.Random(int(ev["t"] * 1000))
-        life = 0.95
-        if lt < 0.5 and ev.get("ring"):  # shock ring (strong events only)
-            kk = lt / 0.5
-            rad = 50 + 400 * ease_out_cubic(kk)
-            d.ellipse((cx - rad, cy - rad, cx + rad, cy + rad),
-                      outline=(255, 235, 140, int(210 * (1 - kk))), width=max(1, int(12 * (1 - kk))))
+        life = 1.0
+        if ev.get("lines") and lt < 0.30:  # radial speed lines
+            kk = lt / 0.30
+            r_in = 140 + 520 * ease_out_cubic(kk)
+            for _ in range(80):
+                ang = rng.uniform(0, 2 * math.pi)
+                length = rng.uniform(260, 700)
+                dth = rng.uniform(0.006, 0.014)
+                pts = [(cx + r_in * math.cos(ang), cy + r_in * math.sin(ang)),
+                       (cx + (r_in + length) * math.cos(ang - dth), cy + (r_in + length) * math.sin(ang - dth)),
+                       (cx + (r_in + length) * math.cos(ang + dth), cy + (r_in + length) * math.sin(ang + dth))]
+                d.polygon(pts, fill=(255, 255, 255, int(230 * (1 - kk))))
+        if ev.get("ring"):
+            for delay, col, wmax, rmax in ((0.0, (255, 235, 140), 14, 430), (0.08, (255, 90, 60), 9, 340)):
+                ll = lt - delay
+                if 0 <= ll < 0.5:
+                    kk = ll / 0.5
+                    rad = 50 + rmax * ease_out_cubic(kk)
+                    d.ellipse((cx - rad, cy - rad, cx + rad, cy + rad), outline=col + (int(220 * (1 - kk)),),
+                              width=max(1, int(wmax * (1 - kk))))
         for _ in range(n):
             ang = rng.uniform(0, 2 * math.pi)
-            v = rng.uniform(260, 980)
-            r0 = rng.uniform(7, 16)
+            v = rng.uniform(300, 1400)
+            r0 = rng.uniform(7, 17)
             col = rng.choice(SPARK_COLORS)
-            diamond = rng.random() < 0.5
+            kind = rng.random()
             spin = rng.uniform(-9, 9)
             if lt > life:
                 continue
-            dist = v * (1 - math.exp(-lt * 3.2)) / 3.2
-            x = cx + math.cos(ang) * dist
-            y = cy + math.sin(ang) * dist + 0.5 * 520 * lt * lt
+
+            def pos(tt):
+                dist = v * (1 - math.exp(-tt * 3.2)) / 3.2
+                return (cx + math.cos(ang) * dist, cy + math.sin(ang) * dist + 0.5 * 520 * tt * tt)
+
+            x, y = pos(lt)
             k = 1 - lt / life
             r = r0 * k ** 0.6
             if r < 0.8:
                 continue
             fill = col + (int(255 * min(1.0, k * 1.6)),)
-            if diamond:
+            if kind < 0.45:      # streak with a tail
+                x0, y0 = pos(max(0.0, lt - 0.05))
+                d.line((x0, y0, x, y), fill=fill, width=max(2, int(r * 0.9)))
+            elif kind < 0.75:    # spinning diamond
                 th = spin * lt
                 pts = [(x + rr * math.cos(th + q), y + rr * math.sin(th + q))
                        for q, rr in ((0, 1.8 * r), (math.pi / 2, 0.8 * r),
@@ -573,14 +634,14 @@ def intro_fx(img, t, banners, hook):
     img = shake_frame(img, t)
     img = scrim_frame(img, t)
     ex_s, ex_a = hook_exit(t)
-    # rotating light rays behind the hook
+    # two counter-rotating light-ray layers behind the hook
     if 1.72 <= t <= HOOK_OUT + 0.25:
-        ra = min(1.0, (t - 1.72) / 0.3) * ex_a * 0.24
-        rot = hook["rays"].rotate(-(t - 1.72) * 22, resample=Image.BILINEAR)
-        paste(img, rot, W / 2, 500, 1.0, ra)
+        ra = min(1.0, (t - 1.72) / 0.25) * ex_a
+        paste(img, hook["rays"].rotate(-(t - 1.72) * 40, resample=Image.BILINEAR), W / 2, 500, 1.0, ra * 0.38)
+        paste(img, hook["rays2"].rotate((t - 1.72) * 28, resample=Image.BILINEAR), W / 2, 500, 1.0, ra * 0.22)
     fa = flash_alpha(t)
     if fa > 0.01:
-        img = Image.blend(img.convert("RGB"), Image.new("RGB", img.size, (255, 255, 255)), min(fa, 0.85))
+        img = Image.blend(img.convert("RGB"), Image.new("RGB", img.size, (255, 246, 215)), min(fa, 0.92))
     ov = spark_layer(t)
     if ov is not None:
         img.paste(ov.convert("RGB"), (0, 0), ov.getchannel("A"))
@@ -591,12 +652,15 @@ def intro_fx(img, t, banners, hook):
             if lt < 0:
                 continue
             if h["kind"] == "slam":
-                st = slam_state(lt)
-                sc, op = st[0] * ex_s, st[1] * ex_a
+                sc0, op0, ang = slam_state(lt)
+                sc, op = sc0 * ex_s, op0 * ex_a
                 if glow is not None:
-                    paste(img, glow, W / 2, h["cy"], sc, op * 0.9)
+                    paste_rot(img, glow, W / 2, h["cy"], sc, op * 0.95, ang)
+                if lt < 0.14:  # zoom-trail afterimages on the slam
+                    for mult, al in ((1.28, 0.30), (1.6, 0.14)):
+                        paste_rot(img, sp, W / 2, h["cy"], sc * mult, op * al, ang)
                 layer = shine(sp, -0.2 + (lt - 0.30) * 2.0) if 0.30 <= lt <= 1.0 else sp
-                paste(img, layer, W / 2, h["cy"], sc, op)
+                paste_rot(img, layer, W / 2, h["cy"], sc, op, ang)
             else:
                 k = ease_out_cubic(lt / 0.35)
                 paste(img, sp, W / 2, h["cy"], ex_s, k * ex_a, dy=(1 - k) * 30)
@@ -606,13 +670,16 @@ def intro_fx(img, t, banners, hook):
     # "2 HARI SAHAJA!" slam on the VO "2 hari saja"
     lt = t - BADGE["t"]
     if 0 <= lt and t < INTRO_OUT:
-        st = slam_state(lt)
+        sc0, op0, ang = slam_state(lt)
         out_k = min(1.0, max(0.0, (t - (INTRO_OUT - 0.2)) / 0.2))
-        sc, op = st[0] * (1 - 0.1 * out_k), st[1] * (1 - out_k)
+        sc, op = sc0 * (1 - 0.1 * out_k), op0 * (1 - out_k)
         badge, bglow = hook["badge"]
-        paste_rot(img, bglow, BADGE["cx"], BADGE["cy"], sc, op * 0.8, BADGE["angle"])
+        a2 = BADGE["angle"] + ang
+        paste_rot(img, bglow, BADGE["cx"], BADGE["cy"], sc, op * 0.8, a2)
+        if lt < 0.14:
+            paste_rot(img, badge, BADGE["cx"], BADGE["cy"], sc * 1.3, op * 0.3, a2)
         paste_rot(img, shine(badge, -0.2 + (lt - 0.3) * 2.0) if 0.3 <= lt <= 1.0 else badge,
-                  BADGE["cx"], BADGE["cy"], sc, op, BADGE["angle"])
+                  BADGE["cx"], BADGE["cy"], sc, op, a2)
     return img
 
 
@@ -700,15 +767,11 @@ def main():
 
     sprites = []  # per pop-up: [(start offset in s, sprite), ...]
     for p in POPUPS:
-        phases = [(0.0, p["name"], p["price"], p["suffix"])]
+        phases = [(0.0, p)]
         if "then" in p:
-            th = p["then"]
-            phases.append((th["t"] - p["t_in"], th["name"], th["price"], th["suffix"]))
-        sp = [popup_sprite(n, pr, sf) for _, n, pr, sf in phases]
-        if len(sp) > 1:  # keep the card the same size across the swap
-            mw = max(x.width for x in sp) // 1 - 2 * BANNER_M
-            sp = [popup_sprite(n, pr, sf, min_w=mw) for _, n, pr, sf in phases]
-        sprites.append([(ph[0], x) for ph, x in zip(phases, sp)])
+            phases.append((p["then"]["t"] - p["t_in"], p["then"]))
+        sprites.append([(off, popup_sprite(ph["name"], ph["price"], ph["suffix"],
+                                           **ph.get("opts", {}))) for off, ph in phases])
     intro = build_intro()
     hook = build_hook()
     label = build_label()
@@ -725,7 +788,7 @@ def main():
          "-preset", "medium", "-crf", "22", "-pix_fmt", "yuv420p",
          "-movflags", "+faststart", video_tmp], stdin=subprocess.PIPE)
 
-    preview_t = {0.07: "00_open_flash", 1.3: "00a_chip", 1.80: "00b_slam1", 2.1: "00c_slam1_settled",
+    preview_t = {0.07: "00_open_flash", 1.77: "20_impact1", 2.00: "21_after1", 2.50: "22_impact2", 10.07: "23_impact_badge", 1.3: "00a_chip", 1.80: "00b_slam1", 2.1: "00c_slam1_settled",
                  2.55: "00d_slam2", 3.2: "00e_hook_full", 4.15: "00f_banner1_burst",
                  10.15: "00g_badge", 4.6: "01_intro_date", 6.4: "02_intro_day", 7.9: "03_intro_loc",
                  9.7: "04_intro_full", 11.2: "05_intro_gone",
@@ -755,10 +818,10 @@ def main():
                     arr = Image.frombuffer("RGB", (W, H), buf, "raw", "RGB", 0, 1)
                 sp = [x for off, x in phases if lt >= off][-1]
                 scale = st[0]
-                if len(phases) > 1:  # small pulse when the price swaps
+                if len(phases) > 1:  # bounce when the card swaps to the bigger one
                     k = lt - phases[1][0]
-                    if 0 <= k < 0.3:
-                        scale *= 1 + 0.07 * math.sin(math.pi * k / 0.3)
+                    if 0 <= k < 0.45:
+                        scale *= 0.74 + 0.26 * spring(k)
                 paste(arr, sp, W / 2, POPUP_CENTER_Y, scale, st[1])
                 break
         if arr is None and t < 11.1:
