@@ -10,11 +10,22 @@ video (9:16, 1080 × 1920, TikTok / Facebook Reels).
 python3 render_kamaar_popups.py INPUT.mp4 output/kamaar_price_popups.mp4 [--logo logo.png] [--vo vo.mp3]
 ```
 
-## Intro (4.0 – 10.9 s): big date / time / location banners
+## Intro hook (0 – 3.9 s): "KAMPUNG TAWAS, IPOH"
+
+Synced to "Kepada warga Kampung Tawas, Ipoh dan kawasan sekitar": a red
+`KEPADA WARGA` chip (1.00 s), `KAMPUNG TAWAS` slams in (1.72 s), then a huge
+`IPOH` (2.47 s), then `& KAWASAN SEKITAR` (3.00 s); all leave at 3.6 s.
+Impact effects on the slams: screen flash, camera shake, spark burst, shock
+ring, rotating light rays and a text shine sweep. A soft dark scrim sits over the
+top of the frame (0.9 – 11 s) for legibility. Everything is configured in
+`HOOK` / `EVENTS` / `BADGE`.
+
+## Intro banners (4.0 – 10.9 s): big date / time / location
 
 Revealed line by line as the presenter says "Pada 7 dan 8 November, Sabtu dan
 Ahad, kami akan berada di Dewan Serba Guna, Kampung Tersusun, Tawas Tambahan,
-Ipoh". Placed in the empty wall area above the presenter (y 160–640).
+Ipoh". Placed in the empty wall area above the presenter (y 160–640); each
+banner enters with a small flash + spark burst.
 
 | On screen | Appears at |
 |---|---|
@@ -24,6 +35,7 @@ Ipoh". Placed in the empty wall area above the presenter (y 160–640).
 | LOKASI: DEWAN SERBAGUNA | 7.45 s |
 | KAMPUNG TERSUSUN | 8.45 s |
 | TAWAS TAMBAHAN, IPOH | 9.20 s |
+| `2 HARI SAHAJA!` slam badge (VO "2 hari saja") | 10.00 s |
 
 ## Price pop-ups – one per price mention in the VO
 

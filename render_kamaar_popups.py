@@ -14,6 +14,7 @@ Requires: ffmpeg, Pillow, numpy. Fonts: Inter (falls back to DejaVu Sans Bold).
 """
 import argparse
 import math
+import random
 import subprocess
 import sys
 from pathlib import Path
@@ -23,6 +24,11 @@ from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
 W, H, FPS = 1080, 1920, 30
 SS = 2  # supersampling factor for sprites
+
+YELLOW = (255, 212, 0)
+RED = (225, 20, 30)
+NAVY = (9, 16, 44)
+WHITE = (255, 255, 255)
 
 # --------------------------------------------------------------------------
 # TIMELINE (seconds, in the source footage)
@@ -72,6 +78,28 @@ INTRO = [
         ("KAMPUNG TERSUSUN", "ExtraBold", 58, "plain", 136, 8.45),
         ("TAWAS TAMBAHAN, IPOH", "Black", 52, "outline", 204, 9.20)]),
 ]
+# "Hook": VO says "Kepada warga Kampung Tawas, Ipoh dan kawasan sekitar" (1.0 - 3.8 s).
+# kind: chip = red pill, slam = huge impact text, sub = small line
+HOOK_OUT = 3.60
+HOOK = [
+    dict(kind="chip", text="KEPADA WARGA", t=1.00, cy=300),
+    dict(kind="slam", text="KAMPUNG TAWAS", size=104, fill=YELLOW, stroke=7,
+         glow=YELLOW, t=1.72, cy=420),
+    dict(kind="slam", text="IPOH", size=210, fill=WHITE, stroke=9,
+         glow=RED, t=2.47, cy=602),
+    dict(kind="sub", text="& KAWASAN SEKITAR", t=3.00, cy=716),
+]
+BADGE = dict(text="2 HARI SAHAJA!", t=10.00, cx=840, cy=692, angle=-5)  # VO "2 hari saja"
+# Impact events: screen flash, camera shake (px) and spark burst (cx, cy, n)
+EVENTS = [
+    dict(t=0.00, flash=0.50, shake=0),
+    dict(t=1.72, flash=0.55, shake=14, burst=(540, 420, 80), ring=True),
+    dict(t=2.47, flash=0.65, shake=20, burst=(540, 595, 100), ring=True),
+    dict(t=4.00, flash=0.22, shake=0, burst=(540, 267, 34)),
+    dict(t=6.55, flash=0.15, shake=0, burst=(760, 316, 24)),
+    dict(t=7.45, flash=0.22, shake=0, burst=(540, 509, 34)),
+    dict(t=10.00, flash=0.40, shake=12, burst=(840, 692, 60), ring=True),
+]
 # Persistent minimal label: date + location, small, top-centre. Hidden while the
 # big intro banners (same info) are on screen, and replaced by the end card.
 LABEL_LINES = [("7 & 8 NOV 2026", "ExtraBold", 36, "Y"),
@@ -81,10 +109,6 @@ LABEL_SHOW = [(0.3, 3.85), (11.0, 46.9)]
 POPUP_CENTER_Y = 1385  # lower-middle: above the burned-in captions (~y1650)
 END_CARD_SECONDS = 5.5
 
-YELLOW = (255, 212, 0)
-RED = (225, 20, 30)
-NAVY = (9, 16, 44)
-WHITE = (255, 255, 255)
 
 FONT_DIR = Path("/usr/share/fonts/opentype/inter")
 FALLBACK = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
@@ -367,6 +391,232 @@ def intro_layers(banners, t):
 
 
 # --------------------------------------------------------------------------
+# intro FX: hook text, flash, shake, sparks, rays, scrim
+# --------------------------------------------------------------------------
+SPARK_COLORS = [YELLOW, WHITE, RED, (255, 160, 0), (255, 235, 150)]
+SCRIM_H = 950
+SCRIM_GRAD = ((1 - np.arange(SCRIM_H) / SCRIM_H) ** 1.4)[:, None, None]
+OVERLAY_H = 1300
+
+
+def with_glow(sp, color, radius=22, strength=0.9):
+    """Soft coloured glow sprite (same centre as sp, bigger canvas)."""
+    pad = radius * 3
+    a = Image.new("L", (sp.width + 2 * pad, sp.height + 2 * pad), 0)
+    a.paste(sp.getchannel("A"), (pad, pad))
+    a = a.filter(ImageFilter.GaussianBlur(radius)).point(lambda v: min(255, int(v * 1.9 * strength)))
+    g = Image.new("RGBA", a.size, color + (0,))
+    g.putalpha(a)
+    return g
+
+
+def shine(sp, pos):
+    """White diagonal highlight band sweeping over the text (pos -0.2 .. 1.2)."""
+    arr = np.asarray(sp).astype(np.float32)
+    h, w = arr.shape[:2]
+    yy, xx = np.mgrid[0:h, 0:w]
+    u = (xx + 0.35 * yy) / (w + 0.35 * h)
+    band = np.exp(-(((u - pos) / 0.07) ** 2))[..., None] * 0.9
+    arr[..., :3] += (255 - arr[..., :3]) * band
+    return Image.fromarray(arr.astype(np.uint8), "RGBA")
+
+
+def paste_rot(frame, sprite, cx, cy, scale, opacity, angle):
+    paste(frame, sprite.rotate(angle, resample=Image.BICUBIC, expand=True), cx, cy, scale, opacity)
+
+
+def build_rays():
+    n = 1500
+    img = Image.new("RGBA", (n, n), (0, 0, 0, 0))
+    d = ImageDraw.Draw(img)
+    c = n / 2
+    for i in range(18):
+        a0 = math.radians(i * 20)
+        a1 = math.radians(i * 20 + 9)
+        d.polygon([(c, c), (c + c * 1.5 * math.cos(a0), c + c * 1.5 * math.sin(a0)),
+                   (c + c * 1.5 * math.cos(a1), c + c * 1.5 * math.sin(a1))],
+                  fill=(255, 220, 70, 255))
+    yy, xx = np.mgrid[0:n, 0:n]
+    rad = np.clip(1 - np.hypot(xx - c, yy - c) / c, 0, 1) ** 1.2
+    a = np.asarray(img.getchannel("A")).astype(np.float32) * rad
+    img.putalpha(Image.fromarray(a.astype(np.uint8)))
+    return img
+
+
+def build_hook():
+    items = []
+    for h in HOOK:
+        if h["kind"] == "chip":
+            sp, glow = pill_sprite(h["text"], "Black", 34, WHITE, RED + (255,),
+                                   px=36, py=14, tracking=5), None
+        elif h["kind"] == "sub":
+            sp, glow = text_sprite(h["text"], "ExtraBold", 42, WHITE, stroke=3,
+                                   stroke_fill=(0, 0, 0, 255), tracking=6), None
+        else:
+            size = h["size"]
+            while True:
+                sp = text_sprite(h["text"], "Black", size, h["fill"], stroke=h["stroke"],
+                                 stroke_fill=RED + (255,) if h["fill"] != RED else NAVY + (255,),
+                                 tracking=1)
+                if sp.width <= 1000 or size < 40:
+                    break
+                size -= 2
+            glow = with_glow(sp, h["glow"])
+        items.append((h, sp, glow))
+    badge = pill_sprite(BADGE["text"], "Black", 46, WHITE, RED + (255,), px=38, py=16, tracking=2)
+    bglow = with_glow(badge, RED, radius=18)
+    return dict(items=items, badge=(badge, bglow), rays=build_rays())
+
+
+def slam_state(lt):
+    """Huge -> normal scale with a small settle wobble. -> (scale, opacity)."""
+    if lt < 0:
+        return None
+    if lt < 0.17:
+        s = 1.0 + 1.25 * (1 - ease_out_cubic(lt / 0.17))
+    else:
+        s = 1.0 + 0.06 * math.exp(-(lt - 0.17) * 12) * math.sin((lt - 0.17) * 38)
+    return s, min(1.0, lt / 0.05)
+
+
+def hook_exit(t):
+    if t <= HOOK_OUT:
+        return 1.0, 1.0
+    k = min(1.0, (t - HOOK_OUT) / 0.25)
+    return 1 + 0.3 * k, 1 - k
+
+
+def shake_frame(img, t):
+    dx = dy = amp = 0.0
+    for ev in EVENTS:
+        lt = t - ev["t"]
+        if ev.get("shake") and 0 <= lt < 0.5:
+            a = ev["shake"] * math.exp(-lt * 8)
+            dx += a * math.sin(lt * 58)
+            dy += a * math.cos(lt * 47 + 1)
+            amp += a
+    if amp < 0.5:
+        return img
+    z = 1 + 0.0016 * amp  # zoom margin always >= the shake offset
+    return img.transform((W, H), Image.AFFINE,
+                         (1 / z, 0, W / 2 * (1 - 1 / z) + dx, 0, 1 / z, H / 2 * (1 - 1 / z) + dy),
+                         resample=Image.BICUBIC)
+
+
+def scrim_frame(img, t):
+    a = 0.55 * min(1.0, max(0.0, (t - 0.9) / 0.4)) * min(1.0, max(0.0, (11.0 - t) / 0.4))
+    if a < 0.005:
+        return img
+    arr = np.array(img)
+    arr[:SCRIM_H] = (arr[:SCRIM_H] * (1 - a * SCRIM_GRAD)).astype(np.uint8)
+    return Image.fromarray(arr)
+
+
+def flash_alpha(t):
+    a = 0.0
+    for ev in EVENTS:
+        lt = t - ev["t"]
+        if 0 <= lt < 0.35:
+            a = max(a, ev["flash"] * math.exp(-lt / 0.07))
+    return a
+
+
+def spark_layer(t):
+    ov, d = None, None
+    for ev in EVENTS:
+        if "burst" not in ev:
+            continue
+        lt = t - ev["t"]
+        if lt < 0 or lt > 1.0:
+            continue
+        if ov is None:
+            ov = Image.new("RGBA", (W, OVERLAY_H), (0, 0, 0, 0))
+            d = ImageDraw.Draw(ov)
+        cx, cy, n = ev["burst"]
+        rng = random.Random(int(ev["t"] * 1000))
+        life = 0.95
+        if lt < 0.5 and ev.get("ring"):  # shock ring (strong events only)
+            kk = lt / 0.5
+            rad = 50 + 400 * ease_out_cubic(kk)
+            d.ellipse((cx - rad, cy - rad, cx + rad, cy + rad),
+                      outline=(255, 235, 140, int(210 * (1 - kk))), width=max(1, int(12 * (1 - kk))))
+        for _ in range(n):
+            ang = rng.uniform(0, 2 * math.pi)
+            v = rng.uniform(260, 980)
+            r0 = rng.uniform(7, 16)
+            col = rng.choice(SPARK_COLORS)
+            diamond = rng.random() < 0.5
+            spin = rng.uniform(-9, 9)
+            if lt > life:
+                continue
+            dist = v * (1 - math.exp(-lt * 3.2)) / 3.2
+            x = cx + math.cos(ang) * dist
+            y = cy + math.sin(ang) * dist + 0.5 * 520 * lt * lt
+            k = 1 - lt / life
+            r = r0 * k ** 0.6
+            if r < 0.8:
+                continue
+            fill = col + (int(255 * min(1.0, k * 1.6)),)
+            if diamond:
+                th = spin * lt
+                pts = [(x + rr * math.cos(th + q), y + rr * math.sin(th + q))
+                       for q, rr in ((0, 1.8 * r), (math.pi / 2, 0.8 * r),
+                                     (math.pi, 1.8 * r), (3 * math.pi / 2, 0.8 * r))]
+                d.polygon(pts, fill=fill)
+            else:
+                d.ellipse((x - r, y - r, x + r, y + r), fill=fill)
+    return ov
+
+
+def intro_fx(img, t, banners, hook):
+    """All intro effects for frame time t (< ~11 s). Returns the finished image."""
+    img = shake_frame(img, t)
+    img = scrim_frame(img, t)
+    ex_s, ex_a = hook_exit(t)
+    # rotating light rays behind the hook
+    if 1.72 <= t <= HOOK_OUT + 0.25:
+        ra = min(1.0, (t - 1.72) / 0.3) * ex_a * 0.24
+        rot = hook["rays"].rotate(-(t - 1.72) * 22, resample=Image.BILINEAR)
+        paste(img, rot, W / 2, 500, 1.0, ra)
+    fa = flash_alpha(t)
+    if fa > 0.01:
+        img = Image.blend(img.convert("RGB"), Image.new("RGB", img.size, (255, 255, 255)), min(fa, 0.85))
+    ov = spark_layer(t)
+    if ov is not None:
+        img.paste(ov.convert("RGB"), (0, 0), ov.getchannel("A"))
+    # hook texts
+    if t < HOOK_OUT + 0.3:
+        for h, sp, glow in hook["items"]:
+            lt = t - h["t"]
+            if lt < 0:
+                continue
+            if h["kind"] == "slam":
+                st = slam_state(lt)
+                sc, op = st[0] * ex_s, st[1] * ex_a
+                if glow is not None:
+                    paste(img, glow, W / 2, h["cy"], sc, op * 0.9)
+                layer = shine(sp, -0.2 + (lt - 0.30) * 2.0) if 0.30 <= lt <= 1.0 else sp
+                paste(img, layer, W / 2, h["cy"], sc, op)
+            else:
+                k = ease_out_cubic(lt / 0.35)
+                paste(img, sp, W / 2, h["cy"], ex_s, k * ex_a, dy=(1 - k) * 30)
+    # date / time / location banners
+    for sp, cx, cy, sc, op in intro_layers(banners, t):
+        paste(img, sp, cx, cy, sc, op)
+    # "2 HARI SAHAJA!" slam on the VO "2 hari saja"
+    lt = t - BADGE["t"]
+    if 0 <= lt and t < INTRO_OUT:
+        st = slam_state(lt)
+        out_k = min(1.0, max(0.0, (t - (INTRO_OUT - 0.2)) / 0.2))
+        sc, op = st[0] * (1 - 0.1 * out_k), st[1] * (1 - out_k)
+        badge, bglow = hook["badge"]
+        paste_rot(img, bglow, BADGE["cx"], BADGE["cy"], sc, op * 0.8, BADGE["angle"])
+        paste_rot(img, shine(badge, -0.2 + (lt - 0.3) * 2.0) if 0.3 <= lt <= 1.0 else badge,
+                  BADGE["cx"], BADGE["cy"], sc, op, BADGE["angle"])
+    return img
+
+
+# --------------------------------------------------------------------------
 # end card
 # --------------------------------------------------------------------------
 def build_end_card(last_frame, logo_path):
@@ -460,6 +710,7 @@ def main():
             sp = [popup_sprite(n, pr, sf, min_w=mw) for _, n, pr, sf in phases]
         sprites.append([(ph[0], x) for ph, x in zip(phases, sp)])
     intro = build_intro()
+    hook = build_hook()
     label = build_label()
     src_dur = probe_duration(args.input)
     video_tmp = str(Path(args.output).with_suffix(".video.mp4"))
@@ -474,7 +725,9 @@ def main():
          "-preset", "medium", "-crf", "22", "-pix_fmt", "yuv420p",
          "-movflags", "+faststart", video_tmp], stdin=subprocess.PIPE)
 
-    preview_t = {4.6: "01_intro_date", 6.4: "02_intro_day", 7.9: "03_intro_loc",
+    preview_t = {0.07: "00_open_flash", 1.3: "00a_chip", 1.80: "00b_slam1", 2.1: "00c_slam1_settled",
+                 2.55: "00d_slam2", 3.2: "00e_hook_full", 4.15: "00f_banner1_burst",
+                 10.15: "00g_badge", 4.6: "01_intro_date", 6.4: "02_intro_day", 7.9: "03_intro_loc",
                  9.7: "04_intro_full", 11.2: "05_intro_gone",
                  12.1: "06_before_bantal", 12.6: "07_bantal", 14.3: "08_removed",
                  16.3: "09_6biji", 19.1: "10_kain1", 21.5: "11_kain2",
@@ -508,12 +761,8 @@ def main():
                         scale *= 1 + 0.07 * math.sin(math.pi * k / 0.3)
                 paste(arr, sp, W / 2, POPUP_CENTER_Y, scale, st[1])
                 break
-        if arr is None:
-            layers = intro_layers(intro, t)
-            if layers:
-                arr = Image.frombuffer("RGB", (W, H), buf, "raw", "RGB", 0, 1)
-                for sp, cx, cy, sc, op in layers:
-                    paste(arr, sp, cx, cy, sc, op)
+        if arr is None and t < 11.1:
+            arr = intro_fx(Image.frombuffer("RGB", (W, H), buf, "raw", "RGB", 0, 1), t, intro, hook)
         la = label_alpha(t)
         if la > 0.003:
             if arr is None:
