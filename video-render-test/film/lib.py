@@ -336,3 +336,27 @@ def _tree(canvas, cam, B, i, zs, dist, fogc, fogk, mirror):
         ang2 = rs.uniform(0, 6.283); r2 = rs.uniform(0.15, 0.55)
         ox, oy = np.cos(ang2) * r2 - 0.12, np.sin(ang2) * r2 - 0.2
         cv2.circle(canvas, (int(u + ox * rad), int(v + oy * rad)), max(1, int(rad * 0.09)), C(rs.uniform(1.1, 1.45)), -1, cv2.LINE_AA)
+
+
+def _windows(canvas, cam, cv, pa, pb, h, c, fog_c, fg):
+    wc = np.clip(c * 0.6 + np.array([0.02, 0.03, 0.045], f32), 0, 1) * (1 - fg) + fog_c * fg
+    wc = tuple(float(v) * 255 for v in wc)
+    wet = np.clip(c * 0.42 * np.array([1.0, 0.9, 0.75], f32), 0, 1) * (1 - fg) + fog_c * fg
+    wet = tuple(float(v) * 255 for v in wet)
+    pa = np.array(pa, float); pb = np.array(pb, float)
+    A0 = pa + 0.06 * (pb - pa); B0 = pa + 0.94 * (pb - pa)
+    q = [cv(pa[0], pa[1], 0.0), cv(pb[0], pb[1], 0.0), cv(pb[0], pb[1], 1.3), cv(pa[0], pa[1], 1.3)]
+    _fill(canvas, cam, q, wet)
+    z = 3.4
+    while z < h - 1.2:
+        a = cv(A0[0], A0[1], z); b = cv(B0[0], B0[1], z)
+        if a[1] < 1.0 or b[1] < 1.0:
+            break
+        thick = int(round(cam.f * 0.85 / ((a[1] + b[1]) / 2)))
+        if thick < 1:
+            break
+        p0 = (int(cam.w / 2 + cam.f * a[0] / a[1]), int(cam.h / 2 - cam.f * a[2] / a[1]))
+        p1 = (int(cam.w / 2 + cam.f * b[0] / b[1]), int(cam.h / 2 - cam.f * b[2] / b[1]))
+        if abs(p0[0]) < 6000 and abs(p1[0]) < 6000 and abs(p0[1]) < 6000 and abs(p1[1]) < 6000:
+            cv2.line(canvas, p0, p1, wc, min(thick, 40), cv2.LINE_AA)
+        z += 3.4
