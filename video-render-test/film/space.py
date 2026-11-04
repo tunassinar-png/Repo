@@ -127,7 +127,7 @@ def earth_b(i, n=150):
     R = lerp(1900, 500, e)
     cy = lerp(1560, 1010, e)
     img = sphere(540, cy, R, 1.9 + 0.05 * T, 0.38, (-0.66, 0.42, 0.50), None, clear=sstep(0.0, 1.0, s) * 0.95, flare=sstep(0.2, 1.0, s))
-    return grade(img, sat=1.0, contrast=1.1, bloom=0.6, vig=0.22)
+    return grade(img, sat=1.05, contrast=1.14, bloom=0.35, vig=0.22, exposure=0.66)
 
 
 # ------------------------------------------------------------ cloud-layer fly-through
@@ -152,6 +152,8 @@ def cloud_setup():
     _S['water'] = WaterSys(seed=31)
     _S['cam'] = Cam()
     _S['sky'] = Sky(7)
+    if 'rain' not in _S:
+        _S['rain'] = RainFx(seed=9)
 
 
 def sea_sky(R, tone):
