@@ -6,7 +6,7 @@
 > **Nota jujur tentang fail ini.** Sandbox ini tidak boleh menjana rakaman fotorealistik.
 > Dokumen ini ialah pakej produksi siap guna: skrip, naratif Bahasa Melayu, 12 prompt
 > penjanaan video, reka bunyi, muzik, overlay teks dan spesifikasi penghantaran.
-> Fail `animatic/apa-jadi-hujan-animatic.mp4` (1080 × 1920, 30 fps, tepat 60 saat) hanyalah
+> Fail `animatic/apa-jadi-hujan-animatic-bunyi.mp4` (versi dengan bunyi: hujan, dron, skor asli prosedur) dan `animatic/apa-jadi-hujan-animatic.mp4` (1080 × 1920, 30 fps, tepat 60 saat) hanyalah
 > rujukan masa dan susun atur dengan latar ruang letak, bukan filem akhir.
 
 ---
