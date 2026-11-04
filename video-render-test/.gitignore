@@ -1,1 +1,4 @@
 node_modules/
+out_film/
+__pycache__/
+*.pyc

@@ -75,7 +75,37 @@ ost *= env([(30, .0), (36, .5), (49, .9), (50, 0), (60, 0)]) * 0.14
 resolve = sum(tone(f, (1, .35, .15), vib=.25) for f in (146.83, 185.0, 220.0, 293.66))
 resolve *= env([(0, 0), (50, 0), (52.5, .8), (56, .7), (59.5, 0), (60, 0)]) * 0.1
 
-mix = (rain * 0.5 + wind * 0.25 + thunder * 0.5 + drone + pulse + piano + ost + resolve)
+# --- scene SFX
+def bnoise(lo=None, hi=None):
+    return norm(fft_filter(rng.standard_normal(N), lo=lo, hi=hi))
+
+flow = bnoise(150, 900) * env([(0, 0), (10, 0), (12, .5), (20, .6), (22, 0), (60, 0)]) * (0.6 + 0.4 * np.sin(2 * np.pi * 0.23 * t))
+flow += bnoise(120, 700) * env([(0, 0), (20, 0), (22, .4), (30, .4), (32, 0), (60, 0)]) * 0.5
+sfx = flow * 0.35
+rumble = bnoise(None, 110) * env([(30, 0), (31, .35), (34, 1), (37, .7), (40, 0), (60, 0)])
+roar = bnoise(250, 3200) * env([(34, 0), (36.5, .6), (39, .75), (41, 0), (60, 0)])
+cracks = np.zeros(N)
+for ct in np.sort(rng.uniform(31, 37, 16)):
+    i0 = int(ct * SR); L = int(0.18 * SR)
+    cracks[i0:i0 + L] += norm(fft_filter(rng.standard_normal(L), lo=250, hi=2600)) * np.exp(-np.arange(L) / (0.04 * SR)) * rng.uniform(.4, 1)
+sfx += rumble * 0.75 + roar * 0.28 + cracks * 0.35
+def chirp(t0, f0, f1, dur, amp, am=38):
+    i0 = int(t0 * SR); L = int(dur * SR); tt = np.arange(L) / SR
+    ph = 2 * np.pi * (f0 * tt + (f1 - f0) * tt ** 2 / (2 * dur))
+    e = np.sin(np.pi * tt / dur) ** 2 * (0.7 + 0.3 * np.sin(2 * np.pi * am * tt))
+    sfx[i0:i0 + L] += np.sin(ph) * e * amp
+for ct in np.sort(rng.uniform(40.6, 48.5, 14)):
+    chirp(ct, rng.uniform(2800, 3600), rng.uniform(3800, 5000), rng.uniform(.08, .16), rng.uniform(.05, .11))
+    chirp(ct + .17, rng.uniform(2600, 3400), rng.uniform(3600, 4600), .1, rng.uniform(.03, .08))
+flut = bnoise(900, 4200) * env([(41.5, 0), (42.0, .5), (43.0, .3), (44.0, 0), (60, 0)]) * (0.5 + 0.5 * np.sin(2 * np.pi * 13 * t) ** 2)
+sfx += flut * 0.12
+for ct in (46.2, 47.0, 48.1, 49.0):
+    chirp(ct, 2100, 1500, .42, .1, am=9); chirp(ct, 4200, 3000, .42, .03, am=9)
+for ct in (55.4, 56.7, 57.6):
+    chirp(ct, 3200, 4300, .13, .04); chirp(ct + .16, 3000, 4000, .11, .03)
+sfx *= 0.9
+
+mix = (rain * 0.5 + wind * 0.25 + thunder * 0.5 + drone + pulse + piano + ost + resolve + sfx * 0.55)
 fade = env([(0, 0), (.4, 1), (59.4, 1), (60, 0)])
 mix *= fade
 mix = mix / np.max(np.abs(mix)) * 0.7
