@@ -17,6 +17,7 @@ Requires: ffmpeg, Pillow, numpy. Fonts: Inter (falls back to DejaVu Sans Bold).
 import argparse
 import math
 import random
+import runpy
 import subprocess
 import sys
 from pathlib import Path
@@ -120,6 +121,10 @@ EVENTS = [
     dict(t=10.00, flash=0.80, shake=34, punch=0.10, chroma=10, ring=True, lines=True,
          burst=(840, 692, 150)),
 ]
+RAYS = [(1.72, 3.85)]    # (start, end) windows of the rotating light rays
+SCRIM = [(0.9, 11.0)]    # windows of the dark top gradient behind intro text
+SCRIM_STRENGTH = 0.55
+PREVIEW_T = None         # {seconds: name} frames dumped with --preview-dir (None = defaults)
 # Persistent minimal label: date + location, small, top-centre. Hidden while the
 # big intro banners (same info) are on screen, and replaced by the end card.
 LABEL_LINES = [("7 & 8 NOV 2026", "ExtraBold", 36, "Y"),
@@ -367,14 +372,27 @@ def banner_bg(h):
 
 
 def build_intro():
-    """-> list of banners: dict(bg, cy, t_in, lines=[(sprite, rel_y, t_line, dx)])"""
+    """-> list of banners: dict(bg, cy, t_in, t_out, lines=[(sprite, rel_y, t_line, dx, t_end)])
+
+    INTRO entries are (tag, t_in, h, lines) tuples stacked from INTRO_TOP, or dicts with
+    keys tag, t_in, h, lines and optional y (top, design units) and t_out.
+    A line is (text, weight, size, style, centre_y, t_line[, t_end]).
+    """
     banners, y = [], INTRO_TOP
-    for tag, t_in, h, lines in INTRO:
+    for entry in INTRO:
+        if isinstance(entry, dict):
+            tag, t_in, h, lines = entry["tag"], entry["t_in"], entry["h"], entry["lines"]
+            top, t_out = entry.get("y", y), entry.get("t_out", INTRO_OUT)
+        else:
+            (tag, t_in, h, lines), top, t_out = entry, y, INTRO_OUT
         bg = banner_bg(h)
-        chip = pill_sprite(tag, "Black", 24, WHITE, RED + (255,), px=22, py=8, tracking=3)
-        bg.alpha_composite(chip, (round((BANNER_M + 34) * K), round(BANNER_M * K) - chip.height // 2))
+        if tag:
+            chip = pill_sprite(tag, "Black", 24, WHITE, RED + (255,), px=22, py=8, tracking=3)
+            bg.alpha_composite(chip, (round((BANNER_M + 34) * K), round(BANNER_M * K) - chip.height // 2))
         ls = []
-        for text, weight, size, style, cy, t_line in lines:
+        for ln in lines:
+            text, weight, size, style, cy, t_line = ln[:6]
+            t_end = ln[6] if len(ln) > 6 else None
             if style == "pill_w":
                 sp = pill_sprite(text, weight, size, WHITE, (255, 255, 255, 30),
                                  outline=YELLOW + (255,), px=26, py=14, tracking=0)
@@ -389,7 +407,7 @@ def build_intro():
                     if lu(sp) <= BANNER_W - 80 + 48 or size < 30:
                         break
                     size -= 2
-            ls.append([sp, cy, t_line, 0, style])
+            ls.append([sp, cy, t_line, 0, style, t_end])
         # pills that share a row are centred as a group
         pills = [l for l in ls if l[4].startswith("pill")]
         if pills:
@@ -399,9 +417,9 @@ def build_intro():
             for l in pills:
                 l[3] = int(x + l[0].width / 2)
                 x += l[0].width + gap
-        banners.append(dict(bg=bg, cy=y + h / 2, h=h, t_in=t_in,
-                            lines=[tuple(l[:4]) for l in ls]))
-        y += h + BANNER_GAP
+        banners.append(dict(bg=bg, cy=top + h / 2, h=h, t_in=t_in, t_out=t_out,
+                            lines=[(l[0], l[1], l[2], l[3], l[5]) for l in ls]))
+        y = top + h + BANNER_GAP
     return banners
 
 
@@ -409,19 +427,21 @@ def intro_layers(banners, t):
     """-> [(sprite, cx, cy, scale, opacity)] for the banners visible at time t."""
     out = []
     for b in banners:
-        lt = t - b["t_in"]
-        if lt < 0 or t >= INTRO_OUT:
+        lt, t_out = t - b["t_in"], b["t_out"]
+        if lt < 0 or t >= t_out:
             continue
         scale = 0.86 + 0.14 * spring(lt)     # gentle bounce, never wider than the frame
         alpha = min(1.0, lt / 0.12)
-        if t > INTRO_OUT - 0.2:
-            k = (t - (INTRO_OUT - 0.2)) / 0.2
+        if t > t_out - 0.2:
+            k = (t - (t_out - 0.2)) / 0.2
             scale *= 1 - 0.08 * k
             alpha *= 1 - k
         sp = b["bg"].copy()
         top = round(BANNER_M * K)
-        for lsp, rel_y, t_line, dx in b["lines"]:
+        for lsp, rel_y, t_line, dx, t_end in b["lines"]:
             k = ease_out_cubic((t - t_line) / 0.30)
+            if t_end is not None and t > t_end - 0.15:
+                k *= max(0.0, (t_end - t) / 0.15)
             if k <= 0:
                 continue
             layer = lsp
@@ -487,28 +507,39 @@ def build_rays(color=(255, 220, 70), step=20, width=9):
     return img
 
 
-def build_hook():
+def build_hook(logo_path=None):
+    """Text pops from HOOK: kind chip | sub (slide up) or slam | pill | logo (impact slam)."""
     items = []
     for h in HOOK:
-        if h["kind"] == "chip":
+        kind = h["kind"]
+        if kind == "chip":
             sp, glow = pill_sprite(h["text"], "Black", 34, WHITE, RED + (255,),
                                    px=36, py=14, tracking=5), None
-        elif h["kind"] == "sub":
+        elif kind == "sub":
             sp, glow = text_sprite(h["text"], "ExtraBold", 42, WHITE, stroke=3,
                                    stroke_fill=(0, 0, 0, 255), tracking=6), None
+        elif kind == "pill":
+            sp = pill_sprite(h["text"], "Black", h.get("size", 56), WHITE, RED + (255,),
+                             px=44, py=20, tracking=2)
+            glow = with_glow(sp, RED, radius=20)
+        elif kind == "logo":
+            sp = logo_sprite(logo_path)
+            glow = with_glow(sp, WHITE, radius=20, strength=0.6)
         else:
             size = h["size"]
+            sf = h.get("stroke_fill") or (RED + (255,) if h["fill"] != RED else NAVY + (255,))
             while True:
                 sp = text_sprite(h["text"], "Black", size, h["fill"], stroke=h["stroke"],
-                                 stroke_fill=RED + (255,) if h["fill"] != RED else NAVY + (255,),
-                                 tracking=1)
+                                 stroke_fill=sf, tracking=1)
                 if lu(sp) <= 1000 or size < 40:
                     break
                 size -= 2
             glow = with_glow(sp, h["glow"], radius=26, strength=1.15)
         items.append((h, sp, glow))
-    badge = pill_sprite(BADGE["text"], "Black", 46, WHITE, RED + (255,), px=38, py=16, tracking=2)
-    bglow = with_glow(badge, RED, radius=18)
+    badge = bglow = None
+    if BADGE:
+        badge = pill_sprite(BADGE["text"], "Black", 46, WHITE, RED + (255,), px=38, py=16, tracking=2)
+        bglow = with_glow(badge, RED, radius=18)
     return dict(items=items, badge=(badge, bglow), rays=build_rays(),
                 rays2=build_rays((255, 70, 50), step=30, width=12))
 
@@ -527,10 +558,11 @@ def slam_state(lt):
     return s, min(1.0, lt / 0.04), ang
 
 
-def hook_exit(t):
-    if t <= HOOK_OUT:
+def hook_exit(t, t_out=None):
+    t_out = HOOK_OUT if t_out is None else t_out
+    if t <= t_out:
         return 1.0, 1.0
-    k = min(1.0, (t - HOOK_OUT) / 0.25)
+    k = min(1.0, (t - t_out) / 0.25)
     return 1 + 0.3 * k, 1 - k
 
 
@@ -565,7 +597,10 @@ def shake_frame(img, t):
 
 
 def scrim_frame(img, t):
-    a = 0.55 * min(1.0, max(0.0, (t - 0.9) / 0.4)) * min(1.0, max(0.0, (11.0 - t) / 0.4))
+    a = 0.0
+    for t0, t1 in SCRIM:
+        a = max(a, min(1.0, max(0.0, (t - t0) / 0.4)) * min(1.0, max(0.0, (t1 - t) / 0.4)))
+    a *= SCRIM_STRENGTH
     if a < 0.005:
         return img
     n = int(SCRIM_H * K)
@@ -652,16 +687,15 @@ def spark_layer(t):
     return ov
 
 
-def intro_fx(img, t, banners, hook):
-    """All intro effects for frame time t (< ~11 s). Returns the finished image."""
+def fx_base(img, t, hook):
+    """Shake / punch zoom / RGB split, scrim, light rays, flash and sparks (under the overlays)."""
     img = shake_frame(img, t)
     img = scrim_frame(img, t)
-    ex_s, ex_a = hook_exit(t)
-    # two counter-rotating light-ray layers behind the hook
-    if 1.72 <= t <= HOOK_OUT + 0.25:
-        ra = min(1.0, (t - 1.72) / 0.25) * ex_a
-        paste(img, hook["rays"].rotate(-(t - 1.72) * 40, resample=Image.BILINEAR), W / 2, 500, K, ra * 0.38)
-        paste(img, hook["rays2"].rotate((t - 1.72) * 28, resample=Image.BILINEAR), W / 2, 500, K, ra * 0.22)
+    for a, b in RAYS:  # two counter-rotating light-ray layers
+        if a <= t <= b:
+            ra = min(1.0, (t - a) / 0.25) * min(1.0, (b - t) / 0.25)
+            paste(img, hook["rays"].rotate(-(t - a) * 40, resample=Image.BILINEAR), W / 2, 500, K, ra * 0.38)
+            paste(img, hook["rays2"].rotate((t - a) * 28, resample=Image.BILINEAR), W / 2, 500, K, ra * 0.22)
     fa = flash_alpha(t)
     if fa > 0.01:
         img = Image.blend(img.convert("RGB"), Image.new("RGB", img.size, (255, 246, 215)), min(fa, 0.92))
@@ -670,41 +704,46 @@ def intro_fx(img, t, banners, hook):
         if K != 1.0:
             ov = ov.resize((OW, round(OVERLAY_H * K)), Image.BILINEAR)
         img.paste(ov.convert("RGB"), (0, 0), ov.getchannel("A"))
-    # hook texts
-    if t < HOOK_OUT + 0.3:
-        for h, sp, glow in hook["items"]:
-            lt = t - h["t"]
-            if lt < 0:
-                continue
-            if h["kind"] == "slam":
-                sc0, op0, ang = slam_state(lt)
-                sc, op = sc0 * ex_s, op0 * ex_a
-                if glow is not None:
-                    paste_rot(img, glow, W / 2, h["cy"], sc, op * 0.95, ang)
-                if lt < 0.14:  # zoom-trail afterimages on the slam
-                    for mult, al in ((1.28, 0.30), (1.6, 0.14)):
-                        paste_rot(img, sp, W / 2, h["cy"], sc * mult, op * al, ang)
-                layer = shine(sp, -0.2 + (lt - 0.30) * 2.0) if 0.30 <= lt <= 1.0 else sp
-                paste_rot(img, layer, W / 2, h["cy"], sc, op, ang)
-            else:
-                k = ease_out_cubic(lt / 0.35)
-                paste(img, sp, W / 2, h["cy"], ex_s, k * ex_a, dy=(1 - k) * 30)
-    # date / time / location banners
+    return img
+
+
+def fx_overlays(img, t, banners, hook):
+    """Text pops (HOOK), date/time/location banners and the optional BADGE slam."""
+    for h, sp, glow in hook["items"]:
+        t_out = h.get("t_out", HOOK_OUT)
+        lt = t - h["t"]
+        if lt < 0 or t > t_out + 0.3:
+            continue
+        ex_s, ex_a = hook_exit(t, t_out)
+        if h["kind"] in ("chip", "sub"):
+            k = ease_out_cubic(lt / 0.35)
+            paste(img, sp, W / 2, h["cy"], ex_s, k * ex_a, dy=(1 - k) * 30)
+            continue
+        sc0, op0, ang = slam_state(lt)
+        sc, op = sc0 * ex_s, op0 * ex_a
+        if glow is not None:
+            paste_rot(img, glow, W / 2, h["cy"], sc, op * 0.95, ang)
+        if lt < 0.14:  # zoom-trail afterimages on the slam
+            for mult, al in ((1.28, 0.30), (1.6, 0.14)):
+                paste_rot(img, sp, W / 2, h["cy"], sc * mult, op * al, ang)
+        layer = shine(sp, -0.2 + (lt - 0.30) * 2.0) if 0.30 <= lt <= 1.0 else sp
+        paste_rot(img, layer, W / 2, h["cy"], sc, op, ang)
     for sp, cx, cy, sc, op in intro_layers(banners, t):
         paste(img, sp, cx, cy, sc, op)
-    # "2 HARI SAHAJA!" slam on the VO "2 hari saja"
-    lt = t - BADGE["t"]
-    if 0 <= lt and t < INTRO_OUT:
-        sc0, op0, ang = slam_state(lt)
-        out_k = min(1.0, max(0.0, (t - (INTRO_OUT - 0.2)) / 0.2))
-        sc, op = sc0 * (1 - 0.1 * out_k), op0 * (1 - out_k)
-        badge, bglow = hook["badge"]
-        a2 = BADGE["angle"] + ang
-        paste_rot(img, bglow, BADGE["cx"], BADGE["cy"], sc, op * 0.8, a2)
-        if lt < 0.14:
-            paste_rot(img, badge, BADGE["cx"], BADGE["cy"], sc * 1.3, op * 0.3, a2)
-        paste_rot(img, shine(badge, -0.2 + (lt - 0.3) * 2.0) if 0.3 <= lt <= 1.0 else badge,
-                  BADGE["cx"], BADGE["cy"], sc, op, a2)
+    if BADGE:  # "2 HARI SAHAJA!" slam
+        lt = t - BADGE["t"]
+        b_out = BADGE.get("t_out", INTRO_OUT)
+        if 0 <= lt and t < b_out:
+            sc0, op0, ang = slam_state(lt)
+            out_k = min(1.0, max(0.0, (t - (b_out - 0.2)) / 0.2))
+            sc, op = sc0 * (1 - 0.1 * out_k), op0 * (1 - out_k)
+            badge, bglow = hook["badge"]
+            a2 = BADGE["angle"] + ang
+            paste_rot(img, bglow, BADGE["cx"], BADGE["cy"], sc, op * 0.8, a2)
+            if lt < 0.14:
+                paste_rot(img, badge, BADGE["cx"], BADGE["cy"], sc * 1.3, op * 0.3, a2)
+            paste_rot(img, shine(badge, -0.2 + (lt - 0.3) * 2.0) if 0.3 <= lt <= 1.0 else badge,
+                      BADGE["cx"], BADGE["cy"], sc, op, a2)
     return img
 
 
@@ -784,11 +823,18 @@ def main():
     ap.add_argument("output")
     ap.add_argument("--width", type=int, default=1080,
                     help="output width (1080 = Full HD 1080x1920, 1440 = 2K 1440x2560)")
+    ap.add_argument("--config", help="python file overriding the constants (POPUPS, INTRO, HOOK, ...)")
+    ap.add_argument("--music", help="background music WAV (already ducked under the voice)")
+    ap.add_argument("--sfx", help="sound-effects WAV mixed on top")
     ap.add_argument("--logo", help="optional official logo PNG (transparent background)")
     ap.add_argument("--vo", help="optional voice-over audio file played on the end card")
     ap.add_argument("--preview-dir", help="also dump key frames as PNG here")
     args = ap.parse_args()
 
+    if args.config:
+        for k, v in runpy.run_path(args.config).items():
+            if k.isupper() and not k.startswith("_"):
+                globals()[k] = v
     set_output_width(args.width)
 
     # sanity: pop-ups must never overlap (previous one is removed first)
@@ -803,7 +849,7 @@ def main():
         sprites.append([(off, popup_sprite(ph["name"], ph["price"], ph["suffix"],
                                            **ph.get("opts", {}))) for off, ph in phases])
     intro = build_intro()
-    hook = build_hook()
+    hook = build_hook(args.logo)
     label = build_label()
     src_dur = probe_duration(args.input)
     video_tmp = str(Path(args.output).with_suffix(".video.mp4"))
@@ -817,8 +863,9 @@ def main():
     enc = subprocess.Popen(
         ["ffmpeg", "-v", "error", "-y", "-f", "rawvideo", "-pix_fmt", "rgb24",
          "-s", f"{OW}x{OH}", "-r", str(FPS), "-i", "-", "-c:v", "libx264",
-         "-preset", "medium" if OW <= W else "slow", "-crf", "22" if OW <= W else "20",
-         "-maxrate", "30M", "-bufsize", "60M", "-pix_fmt", "yuv420p",
+         "-preset", "medium" if OW <= W else "slow", "-crf", "23" if OW <= W else "22",
+         "-maxrate", "6M" if OW <= W else "9M", "-bufsize", "12M" if OW <= W else "18M",
+         "-pix_fmt", "yuv420p",
          "-movflags", "+faststart", video_tmp], stdin=subprocess.PIPE)
 
     preview_t = {0.07: "00_open_flash", 1.77: "20_impact1", 2.00: "21_after1", 2.50: "22_impact2", 10.07: "23_impact_badge", 1.3: "00a_chip", 1.80: "00b_slam1", 2.1: "00c_slam1_settled",
@@ -830,7 +877,7 @@ def main():
                  24.9: "12_sarung", 27.4: "13_toto", 30.0: "14_single", 34.9: "15_peluk",
                  31.0: "16_single3for100", 1.5: "17_label_start", 41.0: "18_label_late",
                  3.6: "19_label_fadeout"}
-    preview_frames = {round(t * FPS): n for t, n in preview_t.items()}
+    preview_frames = {round(t * FPS): n for t, n in (PREVIEW_T or preview_t).items()}
     pdir = Path(args.preview_dir) if args.preview_dir else None
     if pdir:
         pdir.mkdir(parents=True, exist_ok=True)
@@ -842,32 +889,25 @@ def main():
         if len(buf) < fbytes:
             break
         t = n / FPS
-        arr = None
+        img = Image.frombuffer("RGB", (OW, OH), buf, "raw", "RGB", 0, 1)
+        img = fx_base(img, t, hook)
         for p, phases in zip(POPUPS, sprites):
             lt = t - p["t_in"]
             st = popup_state(lt, p.get("dur", POPUP_DURATION))
             if st:
-                if arr is None:
-                    arr = Image.frombuffer("RGB", (OW, OH), buf, "raw", "RGB", 0, 1)
                 sp = [x for off, x in phases if lt >= off][-1]
                 scale = st[0]
                 if len(phases) > 1:  # bounce when the card swaps to the bigger one
                     k = lt - phases[1][0]
                     if 0 <= k < 0.45:
                         scale *= 0.74 + 0.26 * spring(k)
-                paste(arr, sp, W / 2, POPUP_CENTER_Y, scale, st[1])
+                paste(img, sp, W / 2, POPUP_CENTER_Y, scale, st[1])
                 break
-        if arr is None and t < 11.1:
-            arr = intro_fx(Image.frombuffer("RGB", (OW, OH), buf, "raw", "RGB", 0, 1), t, intro, hook)
+        img = fx_overlays(img, t, intro, hook)
         la = label_alpha(t)
         if la > 0.003:
-            if arr is None:
-                arr = Image.frombuffer("RGB", (OW, OH), buf, "raw", "RGB", 0, 1)
-            paste(arr, label, W / 2, LABEL_CY, 1.0, la)
-        if arr is not None:
-            out = arr.tobytes()
-        else:
-            out = buf
+            paste(img, label, W / 2, LABEL_CY, 1.0, la)
+        out = img.tobytes()
         if pdir and n in preview_frames:
             Image.frombytes("RGB", (OW, OH), out).save(pdir / f"{preview_frames[n]}.png")
         enc.stdin.write(out)
@@ -892,17 +932,26 @@ def main():
     enc.wait()
 
     total = (n + total_end) / FPS
-    # mux original audio, fade it out at the end of the footage, pad with silence;
-    # an optional --vo file is placed on the end card
+    # mux the footage audio (fade at the end of the footage, padded with silence) with an
+    # optional --vo on the end card, --music (pre-ducked) and --sfx
     fade_st = max(0.0, n / FPS - 0.35)
     cmd = ["ffmpeg", "-v", "error", "-y", "-i", video_tmp, "-i", args.input]
-    flt = (f"[1:a]aformat=sample_fmts=fltp:channel_layouts=stereo,"
-           f"afade=t=out:st={fade_st:.3f}:d=0.35,apad=whole_dur={total:.3f}[a0]")
+    fmt = "aformat=sample_fmts=fltp:sample_rates=44100:channel_layouts=stereo"
+    vol = "volume=0.72," if (args.music or args.sfx) else ""   # head-room for the music + sfx
+    flt = (f"[1:a]{fmt},{vol}afade=t=out:st={fade_st:.3f}:d=0.35,apad=whole_dur={total:.3f}[a0]")
+    labels, nxt = ["[a0]"], 2
     if args.vo:
         d = int(n / FPS * 1000) + 300
         cmd += ["-i", args.vo]
-        flt += (f";[2:a]aformat=sample_fmts=fltp:channel_layouts=stereo,adelay={d}|{d},"
-                f"apad=whole_dur={total:.3f}[v];[a0][v]amix=inputs=2:normalize=0:duration=first[a]")
+        flt += f";[{nxt}:a]{fmt},adelay={d}|{d},apad=whole_dur={total:.3f}[v]"
+        labels.append("[v]"); nxt += 1
+    for opt, lab in ((args.music, "[m]"), (args.sfx, "[s]")):
+        if opt:
+            cmd += ["-i", opt]
+            flt += f";[{nxt}:a]{fmt},apad=whole_dur={total:.3f}{lab}"
+            labels.append(lab); nxt += 1
+    if len(labels) > 1:
+        flt += f";{''.join(labels)}amix=inputs={len(labels)}:normalize=0:duration=first,alimiter=limit=0.80:level=0:attack=5:release=70[a]"
     else:
         flt = flt.replace("[a0]", "[a]")
     cmd += ["-filter_complex", flt, "-map", "0:v", "-map", "[a]", "-c:v", "copy",
