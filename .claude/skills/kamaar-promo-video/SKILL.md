@@ -1,6 +1,6 @@
 ---
 name: kamaar-promo-video
-description: Build a 9:16 (TikTok / Facebook Reels) promo video for KAMAAR BEDDINGS (Malaysian pillow / mattress / fabric clearance sales) from presenter footage - synchronized price pop-ups on every spoken price, dialogue-synced text pops, a dramatic intro (logo sting, "Kampung Tawas, Ipoh" hook, big date / time / location banners), minimal persistent date + location label, synthesised background music ducked under the voice with synced sound effects, and an event end card with logo; renders Full HD or 2K. Transcribes footage without captions (Whisper via sherpa-onnx). Use when asked for a promo video, price pop-ups, intro, text pops, background music or end card for Kamaar / "Jualan Gudang" / "jelajah" sale footage, or to re-render the Ipoh 7-8 Nov 2026 videos with changes.
+description: Build a 9:16 (TikTok / Facebook Reels) promo video for KAMAAR BEDDINGS (Malaysian pillow / mattress / fabric clearance sales) from presenter footage - synchronized price pop-ups on every spoken price, dialogue-synced text pops, a dramatic intro (logo sting, "Kampung Tawas, Ipoh" hook, big date / time / location banners), minimal persistent date + location label, synthesised background music ducked under the voice with synced sound effects, and an event end card with logo; renders 9:16 or 4:5, Full HD or 2K. Transcribes footage without captions (Whisper via sherpa-onnx). Use when asked for a promo video, price pop-ups, intro, text pops, background music or end card for Kamaar / "Jualan Gudang" / "jelajah" sale footage, or to re-render the Ipoh 7-8 Nov 2026 videos with changes.
 ---
 
 # KAMAAR BEDDINGS promo video
@@ -24,7 +24,8 @@ Malay; reply in Malay. Worked examples (exact timings, wording, decisions):
 - **Music + SFX** (`make_music.py`): synthesised upbeat promo track (126 bpm), ducked under
   the voice, plus boom / whoosh / ding / pop / tick effects placed at the config times.
 - **End card**: date, day, time, venue, "2 HARI SAHAJA!", KAMAAR BEDDINGS logo.
-- **Output**: 1080x1920 (default) or `--width 1440` for 2K (1440x2560); 30 fps.
+- **Output**: 9:16 1080x1920 (default) or `--width 1440` for 2K (1440x2560); **4:5** = 1080x1350 /
+  1440x1800 with `configs/ipoh_hari1_4x5.py` (crops the 1080x1920 footage, re-lays out all text); 30 fps.
 
 ## Files
 - `scripts/render_kamaar_popups.py` - renderer. Defaults = video 1; override per video with
@@ -36,7 +37,10 @@ Malay; reply in Malay. Worked examples (exact timings, wording, decisions):
   transcription and word timing for footage without captions.
 - `scripts/caption_strips.py` - contact sheet of burned-in word-highlighted captions.
 - `scripts/verify_output.py` - ffprobe + audio level + "does the overlay appear at t?" test.
-- `configs/ipoh_hari1.py` - video 2 config (copy it as the starting point for a new video).
+- `configs/ipoh_hari1.py` - video 2 config, 9:16 (copy it as the starting point for a new video).
+- `configs/ipoh_hari1_4x5.py` - the same video in 4:5: imports the 9:16 config and overrides `H`,
+  `CROP_Y`, text `cy`, banner `y`, burst positions, `POPUP_CENTER_Y`, `LABEL_CY`, `RAYS_CY`,
+  `SCRIM_H`, `OVERLAY_H`, `END_CARD_DY` (use it as the template for any other aspect ratio).
 - `reference/` - the two worked examples.
 
 ## Workflow
@@ -79,6 +83,10 @@ Malay; reply in Malay. Worked examples (exact timings, wording, decisions):
    was added, what needs confirming. Do not open a PR unless asked.
 
 ## Rules and gotchas
+- **Other aspect ratios**: set `H` (canvas height at 1080 wide, e.g. 1350 for 4:5) and `CROP_Y` in the
+  config; the renderer crops `1080 x H` from the footage at `CROP_Y`, so choose it to keep the head
+  below the banners (4:5: CROP_Y 150 puts the head at ~y 510; banners y 120-410, text pops y 145-405,
+  price cards y 1150, label y 62). `verify_output.py --height 1350 --crop-y 150` checks such outputs.
 - Footage is 1080x1920; 2K only upscales it (Lanczos + light sharpen). Graphics are native 2K.
 - Positions: price cards y 1385; burned-in captions (video 1) ~y 1650; platform UI zones are the
   top ~150 px and bottom ~250 px; banners/text pops live at y 160-640 because the presenter's
@@ -95,6 +103,8 @@ Malay; reply in Malay. Worked examples (exact timings, wording, decisions):
   "pantai" = bantal (Northern accent); "Dewan Surbaguna" = Dewan Serbaguna; "Kampung Tawas
   Tambahan" = Kampung Tersusun, Tawas Tambahan; a breath became "Terima kasih"; turbo looped
   "7 dan 8 November" three times. Prefer agreement of two models + the user's own wording.
+- The user corrected the kain card to **"KAIN ELA 1 METER RM1"** (not "kain reject kilang"): use the
+  user's spoken wording over Whisper's guess. Big "1 METER" + "RM1" follows the "3 BIJI RM100" style.
 - Venue/brand wording comes from the user's brief: "DEWAN SERBAGUNA KAMPUNG TERSUSUN, TAWAS
   TAMBAHAN, IPOH"; products BANTAL TIDUR, TILAM TOTO, KAIN REJECT KILANG (RM1.00 / METER).
 - Audio mix: voice x0.72, `alimiter=limit=0.80` (AAC overshoots ~+2 dB; limit 0.89 gave

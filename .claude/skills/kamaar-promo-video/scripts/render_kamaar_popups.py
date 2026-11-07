@@ -122,6 +122,9 @@ EVENTS = [
          burst=(840, 692, 150)),
 ]
 RAYS = [(1.72, 3.85)]    # (start, end) windows of the rotating light rays
+RAYS_CY = 500            # y of the ray centre (design units)
+CROP_Y = 0               # when H < 1920 (e.g. 4:5 = 1080x1350): top of the crop window in the 1080x1920 footage
+END_CARD_DY = 0          # shifts every end-card element (design units), for non-9:16 canvases
 SCRIM = [(0.9, 11.0)]    # windows of the dark top gradient behind intro text
 SCRIM_STRENGTH = 0.55
 PREVIEW_T = None         # {seconds: name} frames dumped with --preview-dir (None = defaults)
@@ -694,8 +697,8 @@ def fx_base(img, t, hook):
     for a, b in RAYS:  # two counter-rotating light-ray layers
         if a <= t <= b:
             ra = min(1.0, (t - a) / 0.25) * min(1.0, (b - t) / 0.25)
-            paste(img, hook["rays"].rotate(-(t - a) * 40, resample=Image.BILINEAR), W / 2, 500, K, ra * 0.38)
-            paste(img, hook["rays2"].rotate((t - a) * 28, resample=Image.BILINEAR), W / 2, 500, K, ra * 0.22)
+            paste(img, hook["rays"].rotate(-(t - a) * 40, resample=Image.BILINEAR), W / 2, RAYS_CY, K, ra * 0.38)
+            paste(img, hook["rays2"].rotate((t - a) * 28, resample=Image.BILINEAR), W / 2, RAYS_CY, K, ra * 0.22)
     fa = flash_alpha(t)
     if fa > 0.01:
         img = Image.blend(img.convert("RGB"), Image.new("RGB", img.size, (255, 246, 215)), min(fa, 0.92))
@@ -794,14 +797,14 @@ def build_end_card(last_frame, logo_path):
                 continue
             if kind == "slide":
                 k = ease_out_cubic(lt / 0.5)
-                paste(frame, sp, W / 2, cy, 1.0, k, dy=(1 - k) * 36)
+                paste(frame, sp, W / 2, cy + END_CARD_DY, 1.0, k, dy=(1 - k) * 36)
             elif kind == "pop":
                 s = spring(lt)
                 pulse = 1 + 0.025 * math.sin((lt - 0.5) * 5.0) if lt > 0.5 else 1
-                paste(frame, sp, W / 2, cy, s * pulse, min(1.0, lt / 0.12))
+                paste(frame, sp, W / 2, cy + END_CARD_DY, s * pulse, min(1.0, lt / 0.12))
             else:
                 k = ease_out_cubic(lt / 0.7)
-                paste(frame, sp, W / 2, cy, 1.0, k, dy=(1 - k) * 20)
+                paste(frame, sp, W / 2, cy + END_CARD_DY, 1.0, k, dy=(1 - k) * 20)
         return frame
 
     return render
@@ -855,7 +858,9 @@ def main():
     video_tmp = str(Path(args.output).with_suffix(".video.mp4"))
     fbytes = OW * OH * 3
     # footage is upscaled with Lanczos (+ a light sharpen) when OW != W; overlays are native
-    vf = f"fps={FPS}" + (f",scale={OW}:{OH}:flags=lanczos+accurate_rnd,unsharp=5:5:0.45:5:5:0.0" if OW != W else "")
+    assert 0 <= CROP_Y and CROP_Y + H <= 1920, "crop window outside the 1080x1920 footage"
+    crop = f",crop={W}:{H}:0:{CROP_Y}" if H != 1920 else ""
+    vf = f"fps={FPS}{crop}" + (f",scale={OW}:{OH}:flags=lanczos+accurate_rnd,unsharp=5:5:0.45:5:5:0.0" if OW != W else "")
 
     dec = subprocess.Popen(
         ["ffmpeg", "-v", "error", "-i", args.input, "-an", "-vf", vf,

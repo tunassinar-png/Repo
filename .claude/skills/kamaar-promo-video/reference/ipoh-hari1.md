@@ -4,8 +4,10 @@ Source: `IMG_1401-compressed.mp4`, 44.88 s, stored 1920x1080 with -90 rotation (
 ~60 fps (rendered at 30 fps), mono 48 kHz audio, **no burned-in captions**, presenter alone in
 a large shed (hall, bedding stalls behind him, no products held up). Shot on 7 Nov 2026
 ("hari ini 7 November"). Final: 50.3 s (44.88 s footage + 5.5 s end card).
-Config: `configs/ipoh_hari1.py`. Outputs: `promosi-jelajah/ipoh_hari1_1080.mp4` (~30 MB) and
-`promosi-jelajah/ipoh_hari1_2k.mp4` (~45 MB).
+Config: `configs/ipoh_hari1.py` (9:16) and `configs/ipoh_hari1_4x5.py` (**4:5, the format the user
+asked for**: crop y 150..1500 of the footage). Outputs: `promosi-jelajah/ipoh_hari1_4x5_1080.mp4`
+(1080x1350) and `promosi-jelajah/ipoh_hari1_4x5_2k.mp4` (1440x1800). A 9:16 render was started first and
+discarded when the user switched to 4:5.
 
 ## Transcript (Whisper turbo + large-v3 consensus; word times by prefix scan, +/-0.1 s)
 | t (s) | dialogue | on screen |
@@ -19,7 +21,7 @@ Config: `configs/ipoh_hari1.py`. Outputs: `promosi-jelajah/ipoh_hari1_1080.mp4` 
 | 20.99 | Kita bawa apa? | slam KITA BAWA APA? 21.00 |
 | 22.1 | Kita bawa bantal harga lima ringgit | card BANTAL TIDUR RM5.00 at 23.05 (lima 23.15) |
 | 24.41 | Kita bawa Tilam Toto ni dua puluh sembilan ringgit | card TILAM TOTO RM29.00 at 25.80 (RM29 25.9) |
-| 27.41 | Kita ada kain (reject kilang) yang harga semeter, seringgit | card KAIN REJECT KILANG RM1.00 / METER at 29.45 (seringgit 29.55) |
+| 27.41 | Kita ada kain (reject kilang) yang harga semeter, seringgit | card KAIN ELA **1 METER** / RM1 at 29.45 (seringgit 29.55; user wording "kain ela 1 meter rm1") |
 | 30.31 | Jadi jangan lupa | slam JANGAN LUPA! 30.40 |
 | 31.85 | untuk hari Sabtu dan hari Ahad, 7 dan 8 November | banner TARIKH: SABTU & AHAD 31.85; 7 & 8 NOVEMBER 2026 33.45 |
 | 35.33 | Kami akan berada di sini | chip KAMI AKAN BERADA DI SINI 35.40 |
@@ -35,8 +37,8 @@ events, tick on lines, pop + ding on price cards, end-card boom/ding/shimmer) si
 Final loudness about -12 LUFS, limiter 0.80.
 
 ## To confirm with the user
-- "KAIN REJECT KILANG": Whisper heard "kain elok/elak/crane yang harga semeter seringgit"; the
-  name is the user's own product wording (same product as video 1).
+- Kain card: Whisper heard "kain elok/elak/crane yang harga semeter seringgit"; the user then
+  corrected it to "KAIN ELA 1 METER RM1" and that is what the card says (confirmed by the user).
 - "MAI RAMAI-RAMAI!": heard "boleh pakai / jadi ... ramai-ramai" (brief wording: "Mai ramai-ramai").
 - Venue "Kampung Tersusun, Tawas Tambahan": Whisper wrote "Kampung Tawas Tambahan"; the user's
   brief (and video 1 captions) say Kampung Tersusun.

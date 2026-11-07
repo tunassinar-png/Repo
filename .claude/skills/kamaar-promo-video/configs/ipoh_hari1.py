@@ -11,7 +11,7 @@ Dialogue (Whisper large-v3 + turbo, word times from prefix-decoding, +/-0.1 s):
  19.29 Dua hari saja, abang kakak
  20.99 Kita bawa apa? Kita bawa bantal harga lima ringgit        (RM5 23.15)
  24.41 Kita bawa Tilam Toto ni dua puluh sembilan ringgit        (RM29 25.9)
- 27.41 Kita ada kain (reject kilang) yang harga semeter, seringgit (seringgit 29.55)
+ 27.41 Kita ada kain (reject kilang) yang harga semeter, seringgit (seringgit 29.55) - user's wording: KAIN ELA 1 METER RM1
  30.31 Jadi jangan lupa / 31.85 untuk hari Sabtu dan hari Ahad / 33.47 7 dan 8 November
  35.33 Kami akan berada di sini / 37.53 Jadi mai ramai-ramai di Dewan Serbaguna Kampung
        Tersusun, Tawas Tambahan (42.1)
@@ -25,7 +25,9 @@ _Y, _R, _W = (255, 212, 0), (225, 20, 30), (255, 255, 255)
 POPUPS = [
     dict(name="BANTAL TIDUR", price="RM5.00", suffix=None, t_in=23.05),
     dict(name="TILAM TOTO", price="RM29.00", suffix=None, t_in=25.80),
-    dict(name="KAIN REJECT KILANG", price="RM1.00", suffix="/ METER", t_in=29.45),
+    # user: "kain ela 1 meter RM1" (Whisper heard "kain elok/elak"); big 1 METER + RM1
+    dict(name=[("KAIN ELA  ", 1.0, "W"), ("1 METER", 2.0, "Y")], price="RM1", suffix=None,
+         t_in=29.45, dur=2.0, opts=dict(price_size=150, max_name_w=840, min_w=700)),
 ]
 
 # ---- text pops synced to the dialogue ----
