@@ -1,10 +1,11 @@
-"""10 s vertical (1080x1920) photo video with slow camera moves and beat-synced cuts.
-Usage: make_video.py out_silent.mp4 img1 img2 img3 img4 img5"""
+"""10 s photo video with slow camera moves and beat-synced cuts.
+Usage: make_video.py out_silent.mp4 [9:16|4:5] img1 img2 img3 img4 img5"""
 import sys, subprocess
 import numpy as np, cv2
 from PIL import Image, ImageOps
 
 W, H, FPS, N = 1080, 1920, 30, 300
+ASPECT = (9, 16)
 CLIP = 60          # frames per photo (= 1 bar at 120 BPM)
 XF = 7             # crossfade frames
 # per photo: base centre x (fraction), focal point (fx, fy), zoom range
@@ -24,12 +25,18 @@ def kb(img, cfg, t):
     h, w = img.shape[:2]
     e = t * t * (3 - 2 * t)
     z = cfg['z'][0] + (cfg['z'][1] - cfg['z'][0]) * e
-    cw = h * 9 / 16 / z; ch = h / z
+    ar = W / H
+    if ar > w / h:
+        cw0, ch0 = w, w / ar
+    else:
+        cw0, ch0 = h * ar, h
+    cw, ch = cw0 / z, ch0 / z
     cx = cfg['cx'] * w
     fx, fy = cfg['f'][0] * w, cfg['f'][1] * h
     pull = (z - 1.0) * 1.6
     cx = cx + (fx - cx) * min(pull, 0.8)
-    cy = h / 2 + (fy - h / 2) * min(pull, 0.8) * (ch < h)
+    cy0 = h / 2 if ch0 >= h else min(max(0.42 * h, ch0 / 2), h - ch0 / 2)
+    cy = cy0 + (fy - cy0) * min(pull, 0.8)
     x0 = float(np.clip(cx - cw / 2, 0, w - cw)); y0 = float(np.clip(cy - ch / 2, 0, h - ch))
     sx, sy = W / cw, H / ch
     M = np.array([[sx, 0, -x0 * sx], [0, sy, -y0 * sy]], np.float32)
@@ -43,8 +50,15 @@ def vignette():
 
 
 def main():
+    global W, H
     out = sys.argv[1]
-    imgs = [load(p) for p in sys.argv[2:7]]
+    if sys.argv[2] in ('9:16', '4:5'):
+        a, b = map(int, sys.argv[2].split(':'))
+        W, H = 1080, round(1080 * b / a)
+        rest = sys.argv[3:8]
+    else:
+        rest = sys.argv[2:7]
+    imgs = [load(p) for p in rest]
     vig = vignette()
     p = subprocess.Popen(['ffmpeg', '-y', '-v', 'error', '-f', 'rawvideo', '-pix_fmt', 'rgb24', '-s', f'{W}x{H}', '-r', str(FPS), '-i', '-',
                           '-c:v', 'libx264', '-preset', 'slow', '-crf', '14', '-pix_fmt', 'yuv420p', '-colorspace', 'bt709', '-color_primaries', 'bt709',
