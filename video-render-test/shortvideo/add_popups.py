@@ -4,21 +4,20 @@ import sys, subprocess, json
 import numpy as np, cv2
 from PIL import Image, ImageDraw, ImageFont
 
-POPS = [("KOLAR BIRU", 0.30, 1.75),
-        ("TEKUN SETIAP HARI", 2.30, 3.75),
-        ("TANGAN YANG BEKERJA", 4.30, 5.75),
-        ("LANGKAH DEMI LANGKAH", 6.30, 7.75),
-        ("TERIMA KASIH, KOLAR BIRU", 8.20, 9.55)]
+POPS = [("Pagi-pagi makan lasagna", 0.30, 1.85),
+        ("Sambil bagi ayam makan,", 2.30, 3.85),
+        ("Jangan tanya aku kat mana", 4.30, 5.85),
+        ("Tak cari duit macam mana nak makan!", 6.30, 9.55)]
 FONT = '/usr/share/fonts/opentype/inter/Inter-Bold.otf'
 BLUE = (31, 63, 191)
 f32 = np.float32
 
 
-def plate(text, W, size=70):
+def plate(text, W, size=58):
     SS = 3
     font = ImageFont.truetype(FONT, size * SS)
     tmp = ImageDraw.Draw(Image.new('L', (4, 4)))
-    maxw = (W - 150) * SS
+    maxw = (W - 120) * SS
     words = text.split(' ')
     lines = [text]
     if tmp.textlength(text, font=font) + 90 * SS > maxw:
