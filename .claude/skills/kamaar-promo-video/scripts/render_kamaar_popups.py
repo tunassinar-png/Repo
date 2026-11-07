@@ -956,7 +956,7 @@ def main():
             flt += f";[{nxt}:a]{fmt},apad=whole_dur={total:.3f}{lab}"
             labels.append(lab); nxt += 1
     if len(labels) > 1:
-        flt += f";{''.join(labels)}amix=inputs={len(labels)}:normalize=0:duration=first,alimiter=limit=0.80:level=0:attack=5:release=70[a]"
+        flt += f";{''.join(labels)}amix=inputs={len(labels)}:normalize=0:duration=first,alimiter=limit=0.66:level=0:attack=5:release=70[a]"
     else:
         flt = flt.replace("[a0]", "[a]")
     cmd += ["-filter_complex", flt, "-map", "0:v", "-map", "[a]", "-c:v", "copy",

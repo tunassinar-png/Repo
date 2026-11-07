@@ -107,8 +107,9 @@ Malay; reply in Malay. Worked examples (exact timings, wording, decisions):
   user's spoken wording over Whisper's guess. Big "1 METER" + "RM1" follows the "3 BIJI RM100" style.
 - Venue/brand wording comes from the user's brief: "DEWAN SERBAGUNA KAMPUNG TERSUSUN, TAWAS
   TAMBAHAN, IPOH"; products BANTAL TIDUR, TILAM TOTO, KAIN REJECT KILANG (RM1.00 / METER).
-- Audio mix: voice x0.72, `alimiter=limit=0.80` (AAC overshoots ~+2 dB; limit 0.89 gave
-  +1.2 dBTP). The phone voice is already very hot (-8 dBFS RMS, peaks 0 dB).
+- Audio mix: voice x0.72, `alimiter=limit=0.66` (AAC overshoots ~3 dB: limit 0.89 gave +1.2 dBTP,
+  0.80 gave +0.2, 0.66 gives -0.5 dBTP at about -11.7 LUFS). To fix audio only, re-mux the finished
+  file with `-c:v copy` instead of re-rendering. The phone voice is already very hot (-8 dBFS RMS).
 - Sharing: a 78 MB 2K file failed to open for the user; keep 2K ~45 MB (crf 22, maxrate 9M).
 - You cannot save to the user's Photos or Downloads (cloud container); only a connected Remote
   Control computer folder can be written (`list_computer_folders`). Otherwise tell them to

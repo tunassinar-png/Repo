@@ -34,7 +34,7 @@ Sections: 0-3.12 level 2 (kick + bass + pad + hats, riser 0.75-3.12) -> 3.12 dro
 with a riser into 38.15 -> 38.1-44.88 level 4 (lead) -> end card level 3, faded out. Music is
 ducked ~10 dB under the voice (fast attack, 0.4 s release) and SFX (boom + whoosh on strong
 events, tick on lines, pop + ding on price cards, end-card boom/ding/shimmer) sit on top.
-Final loudness about -12 LUFS, limiter 0.80.
+Final loudness about -11.7 LUFS, limiter 0.66 (true peak -0.5 dBTP).
 
 ## To confirm with the user
 - Kain card: Whisper heard "kain elok/elak/crane yang harga semeter seringgit"; the user then
