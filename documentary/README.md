@@ -14,3 +14,11 @@ npx remotion studio src/index.ts     # pratonton
 npm run render                       # render ke out/documentary.mp4
 ```
 Jika muat turun Chrome disekat, tambah `--browser-executable=<chromium> --chrome-mode=chrome-for-testing`.
+
+## Suara latar (VO)
+Skrip VO bertanda masa ada dalam `vo/SKRIP.md` (suara lelaki Melayu Malaysia, 40-an). Letak rakaman sebagai `vo/01.wav` … `vo/07.wav`, kemudian:
+
+```
+python3 tools/mix_vo.py      # campur VO + muzik (muzik turun automatik semasa VO) -> public/soundtrack.wav
+npm run render
+```

@@ -99,7 +99,7 @@ L = 0.8 * L + 0.2 * R2; R = 0.8 * R + 0.2 * L2
 peak = max(np.abs(L).max(), np.abs(R).max())
 L = np.tanh(L / peak * 1.1) * 0.85; R = np.tanh(R / peak * 1.1) * 0.85
 pcm = (np.stack([L, R], 1) * 32767).astype('<i2')
-out = root / 'public/soundtrack.wav'
+out = root / 'public/music.wav'
 with wave.open(str(out), 'wb') as w:
     w.setnchannels(2); w.setsampwidth(2); w.setframerate(SR); w.writeframes(pcm.tobytes())
 print('wrote', out, f'{DUR:.1f}s')
