@@ -5,7 +5,7 @@ Dokumentari pendek 60 saat, 16:9 (1920×1080, 30 fps). Footage dijana di Grok (p
 ## Fail dalam `out/`
 | Fail | Kegunaan |
 |---|---|
-| `overlay_alpha.webm` | Teks kecil setiap babak + sarikata + soalan penutup (VP9 alfa lutsinar, 60 s). Letak di atas klip dalam DaVinci/Premiere/Final Cut. |
+| `overlay_alpha.webm` | Teks kecil setiap babak + sarikata + animasi nombor/ikon/teks (panel kanan) + soalan penutup (VP9 alfa lutsinar, 60 s). Letak di atas klip dalam DaVinci/Premiere/Final Cut. |
 | `overlay_greenscreen.mp4` | Versi skrin hijau jika aplikasi tidak menyokong alfa (*Chroma Key*, warna 00FF00). |
 | `subtitles.srt` | Sarikata Melayu (boleh diimport ke CapCut, Premiere, Facebook). Masa dianggar daripada panjang ayat; selaraskan semula selepas naratif sebenar dirakam. |
 | `musik_latar.mp3` | Muzik 60 saat: misteri (A minor) hingga 0:40, bertukar kepada inspirasi (C/G major) 0:40–1:00. Tahap rendah, tiada vokal. |
@@ -25,6 +25,18 @@ Jana semula: `python3 build_overlay.py out`, `python3 make_music.py out/music_be
 | 0:50–1:00 | Jadi, jika semua wanita di dunia ini cantik… mungkin yang berubah bukan dunia, tetapi cara kita menilai kecantikan. Apakah sebenarnya yang membuat seseorang itu cantik? | APA PENDAPAT ANDA? (0:56.6) + "Tulis pendapat anda di ruang komen" |
 
 **Pelarasan:** naratif babak 6 asalnya 28 patah perkataan (terlalu panjang untuk 10 saat bersama soalan penutup). Saya buang "Persoalannya," supaya muat. Jika mahu teks asal penuh, naratif perlu dibaca lebih laju atau video jadi sekitar 62 saat.
+
+## Animasi grafik (panel kanan, 0:01–0:49; tanda soal terapung 0:50–1:00)
+| Babak | Animasi |
+|---|---|
+| 1 | Kaunter nombor "≈ 8.2 BILION" penduduk dunia dan "≈ 4.1 BILION" wanita, piktogram 20 orang, separuh bertukar emas lalu berkilau ("SEMUA WANITA CANTIK"). |
+| 2 | 12 orang berkilau satu persatu ("TERPESONA"), kemudian kilauan hilang ("BIASA SAHAJA") sambil bar "KEISTIMEWAAN" menurun. |
+| 3 | Kaca pembesar menyapu barisan orang yang bertukar warna berbeza-beza, kemudian empat kad muncul: GAYA, PERSONALITI, KEYAKINAN, KEUNIKAN DIRI (diselaraskan dengan ayat naratif). |
+| 4 | Cermin ≠ hati ("CANTIK" ≠ "BAHAGIA") dengan palang merah, kemudian tiga baris "TIDAK DIJAMIN": kebahagiaan, kejayaan, hubungan sempurna. |
+| 5 | Empat cincin terisi satu persatu: KEBIJAKSANAAN, KEJUJURAN, KEBAIKAN HATI, CARA MELAYAN. |
+| 6 | Tanda soal "?" terapung di kiri dan kanan, bersama soalan penutup. |
+
+**Semak sebelum siar:** angka "≈ 8.2 bilion" (penduduk dunia) dan "≈ 4.1 bilion" (wanita, kira-kira 49.7%) ialah anggaran kasar berdasarkan data PBB; semak angka terkini. Semua panel lain ialah ilustrasi konsep tanpa data. Panel berada di sebelah kanan supaya wajah di tengah bingkai tidak tertutup; jika klip anda berbeza, ubah `PX, PY` dalam `graphics.py`.
 
 ## Prompt Grok (12 klip × 5 s, 16:9)
 Tampal blok gaya di hujung setiap prompt:
