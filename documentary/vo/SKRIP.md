@@ -9,7 +9,7 @@ Setiap baris akan diletakkan pada masa `Mula` dan dilaraskan (atempo, maks 1.3×
 | Fail | Mula (s) | Maks (s) | Teks |
 |---|---|---|---|
 | 01 | 0.8 | 4.2 | Apa akan jadi… sekiranya semua wanita di dunia ni… cantik? |
-| 02 | 5.4 | 6.2 | Sejak azali, kecantikan dianggap satu anugerah. Industrinya bernilai lebih empat ratus bilion dolar setahun. |
+| 02 | 5.1 | 7.2 | Sejak azali, kecantikan dianggap anugerah. Industrinya bernilai lebih empat ratus bilion dolar setahun. |
 | 03 | 12.4 | 8.0 | Sekarang, bayangkan. Esok pagi, lebih empat bilion wanita… semuanya cantik. |
 | 04 | 22.4 | 8.8 | Tapi sesuatu itu bernilai kerana ia jarang. Bila semua orang memilikinya, cantik tak lagi membezakan sesiapa. |
 | 05 | 32.6 | 8.6 | Industri kecantikan mungkin goyah. Namun manusia tetap mahu membezakan diri… cuma di tempat lain. |
