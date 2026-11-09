@@ -1,0 +1,218 @@
+<title>Studio Rakaman Suara</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: one narrow column like a script on a lectern. Six scene cards, each a teleprompter text plus its own record control. */
+:root {
+  --bg: #f1eff7; --surface: #ffffff; --fg: #1a1830; --muted: #5f5c7a; --line: #d9d5ea;
+  --accent: #5b3fb8; --accent-fg: #ffffff; --soft: #ece8fa;
+  --ok: #0f7a4d; --ok-bg: #dff5ea; --warn: #8a5200; --warn-bg: #fff0d6; --bad: #a3262d; --bad-bg: #fde3e3;
+  --font-ui: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #12101f; --surface: #1b1930; --fg: #eceaf8; --muted: #a29fbc; --line: #2d2a4a;
+    --accent: #a995ff; --accent-fg: #12101f; --soft: #262245;
+    --ok: #5fd39b; --ok-bg: #12301f; --warn: #f0b35a; --warn-bg: #36270f; --bad: #ff8a8a; --bad-bg: #3a1618; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #12101f; --surface: #1b1930; --fg: #eceaf8; --muted: #a29fbc; --line: #2d2a4a;
+  --accent: #a995ff; --accent-fg: #12101f; --soft: #262245;
+  --ok: #5fd39b; --ok-bg: #12301f; --warn: #f0b35a; --warn-bg: #36270f; --bad: #ff8a8a; --bad-bg: #3a1618; color-scheme: dark;
+}
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--font-ui);
+  padding-block: 24px 48px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+main { max-width: 640px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px; min-width: 0; }
+h1 { font-size: 1.4rem; line-height: 1.2; margin: 0; text-wrap: balance; }
+.sub { margin: 6px 0 0; color: var(--muted); line-height: 1.5; }
+.steps { margin: 0; padding-left: 1.2rem; line-height: 1.6; }
+.steps li { margin-bottom: 2px; }
+.bar { display: flex; align-items: center; gap: 12px; font-size: 0.95rem; }
+.meter { flex: 1; height: 8px; border-radius: 8px; background: var(--line); overflow: hidden; min-width: 0; }
+.meter i { display: block; height: 100%; width: 0; background: var(--accent); transition: width .3s; }
+.msg { padding: 12px 14px; border-radius: 12px; background: var(--warn-bg); color: var(--warn); line-height: 1.45; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.head b { font-size: 1rem; }
+.time { color: var(--muted); font-size: 0.85rem; font-variant-numeric: tabular-nums; }
+.script { font-size: 1.15rem; line-height: 1.7; margin: 0; padding: 12px 14px; background: var(--soft); border-radius: 12px; text-wrap: pretty; }
+.row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.btn { font: inherit; font-size: 0.95rem; font-weight: 600; padding: 11px 16px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
+.btn.primary { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
+.btn:focus-within, .btn:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.chip { font-size: 0.82rem; font-weight: 600; padding: 4px 10px; border-radius: 99px; background: var(--soft); color: var(--muted); }
+.chip.ok { background: var(--ok-bg); color: var(--ok); }
+.chip.warn { background: var(--warn-bg); color: var(--warn); }
+.chip.bad { background: var(--bad-bg); color: var(--bad); }
+audio { width: 100%; max-width: 100%; }
+.note { color: var(--muted); font-size: 0.88rem; line-height: 1.55; margin: 0; }
+</style>
+
+<main>
+  <header>
+    <h1>Rakam suara naratif</h1>
+    <p class="sub">Enam babak, enam rakaman pendek. Suara manusia sebenar akan menggantikan suara robot.</p>
+  </header>
+
+  <ol class="steps">
+    <li>Baca teks setiap babak dengan suara biasa, perlahan dan jelas.</li>
+    <li>Tekan <b>Rakam</b> pada telefon, atau <b>Pilih fail</b> jika anda sudah ada audio (contohnya dari CapCut).</li>
+    <li>Bila enam kad siap, beritahu Claude.</li>
+  </ol>
+
+  <div class="bar"><span id="count">0 daripada 6 siap</span><div class="meter"><i id="meter"></i></div></div>
+  <div class="msg" id="msg" hidden></div>
+
+  <div id="cards" style="display:flex;flex-direction:column;gap:18px"></div>
+
+  <p class="note">Sasaran setiap babak ialah kira-kira 8 hingga 9 saat. Jika terlalu panjang, ulang dengan bacaan sedikit lebih laju. Anda boleh ganti rakaman bila-bila masa dengan menekan butang sekali lagi.</p>
+</main>
+
+<script>
+(function () {
+  var SCENES = [
+    { n: 1, t: '0:00–0:10', text: 'Pernah tak anda terfikir… apa akan jadi kalau semua wanita dalam dunia ini cantik? Adakah dunia akan menjadi lebih indah?' },
+    { n: 2, t: '0:10–0:20', text: 'Pada mulanya, mungkin semua orang akan terpesona. Tetapi apabila semua orang cantik, kecantikan mungkin tidak lagi dianggap sesuatu yang luar biasa.' },
+    { n: 3, t: '0:20–0:30', text: 'Manusia mungkin mula mencari sesuatu yang lain untuk membezakan seseorang. Gaya, personaliti, keyakinan dan keunikan diri menjadi perhatian.' },
+    { n: 4, t: '0:30–0:40', text: 'Tetapi adakah semua wanita akan lebih bahagia? Tidak semestinya. Kerana kecantikan tidak menjamin kebahagiaan, kejayaan ataupun hubungan yang sempurna.' },
+    { n: 5, t: '0:40–0:50', text: 'Akhirnya, manusia mungkin semakin menghargai perkara yang lebih mendalam. Kebijaksanaan, kejujuran, kebaikan hati dan cara seseorang melayan orang lain.' },
+    { n: 6, t: '0:50–1:00', text: 'Jadi, jika semua wanita di dunia ini cantik… mungkin yang berubah bukan dunia, tetapi cara kita menilai kecantikan. Apakah sebenarnya yang membuat seseorang itu cantik?' }
+  ];
+  var cards = document.getElementById('cards');
+  var msg = document.getElementById('msg');
+  var els = {};
+  var state = {};
+  var assets = null, db = null;
+
+  function show(text) { msg.hidden = false; msg.textContent = text; }
+
+  SCENES.forEach(function (s) {
+    var c = document.createElement('section');
+    c.className = 'card';
+    c.innerHTML =
+      '<div class="head"><b>Babak ' + s.n + '</b><span class="time">' + s.t + '</span></div>' +
+      '<p class="script"></p>' +
+      '<div class="row">' +
+        '<label class="btn primary" id="rec' + s.n + '"><input type="file" accept="audio/*" capture hidden>Rakam</label>' +
+        '<label class="btn" id="pick' + s.n + '"><input type="file" accept="audio/*,video/mp4,video/webm,.m4a,.mp3,.wav,.aac,.ogg,.opus,.amr,.3gp" hidden>Pilih fail</label>' +
+        '<span class="chip" id="chip' + s.n + '">Belum ada rakaman</span>' +
+      '</div>' +
+      '<audio id="aud' + s.n + '" controls preload="metadata" hidden></audio>';
+    c.querySelector('.script').textContent = s.text;
+    cards.appendChild(c);
+    els[s.n] = {
+      chip: c.querySelector('#chip' + s.n), aud: c.querySelector('#aud' + s.n),
+      inputs: c.querySelectorAll('input[type=file]'), btns: [c.querySelector('#rec' + s.n), c.querySelector('#pick' + s.n)]
+    };
+    Array.prototype.forEach.call(els[s.n].inputs, function (inp) {
+      inp.addEventListener('change', function () {
+        var f = inp.files && inp.files[0];
+        inp.value = '';
+        if (f) handle(s.n, f);
+      });
+    });
+  });
+
+  function setChip(n, text, kind) {
+    var ch = els[n].chip;
+    ch.textContent = text;
+    ch.className = 'chip' + (kind ? ' ' + kind : '');
+  }
+
+  function durationOf(file) {
+    return new Promise(function (resolve) {
+      var a = document.createElement('audio');
+      var url = URL.createObjectURL(file);
+      var done = false;
+      function fin(v) { if (!done) { done = true; URL.revokeObjectURL(url); resolve(v); } }
+      a.preload = 'metadata';
+      a.onloadedmetadata = function () { fin(isFinite(a.duration) ? a.duration : null); };
+      a.onerror = function () { fin(null); };
+      setTimeout(function () { fin(null); }, 4000);
+      a.src = url;
+    });
+  }
+
+  function verdict(n, dur) {
+    if (dur == null) return setChip(n, 'Dimuat naik', 'ok');
+    var d = dur.toFixed(1).replace('.', ',') + ' saat';
+    if (dur <= 9.3) setChip(n, 'Dimuat naik · ' + d + ' · muat', 'ok');
+    else if (dur <= 10.5) setChip(n, 'Dimuat naik · ' + d + ' · agak panjang', 'warn');
+    else setChip(n, 'Dimuat naik · ' + d + ' · terlalu panjang', 'bad');
+  }
+
+  function progress() {
+    var done = SCENES.filter(function (s) { return state[s.n]; }).length;
+    document.getElementById('count').textContent = done + ' daripada 6 siap';
+    document.getElementById('meter').style.width = (done / 6 * 100) + '%';
+  }
+
+  function setBusy(n, busy) {
+    els[n].btns.forEach(function (b) { b.style.opacity = busy ? 0.55 : 1; b.style.pointerEvents = busy ? 'none' : ''; });
+  }
+
+  async function handle(n, file) {
+    if (!assets || !db) { show('Muat naik hanya berfungsi apabila halaman dibuka oleh pemilik yang sudah log masuk.'); return; }
+    setBusy(n, true);
+    setChip(n, 'Memuat naik…', '');
+    var local = URL.createObjectURL(file);
+    els[n].aud.src = local; els[n].aud.hidden = false;
+    try {
+      var dur = await durationOf(file);
+      var type = /webm/i.test(file.type) ? 'video/webm' : 'video/mp4';
+      var r = await assets.upload(file, { type: type });
+      var old = state[n] && state[n].assetId;
+      await db.doc('voice/s' + n).set({ scene: n, assetId: r.id, name: file.name || 'rakaman', size: r.sizeBytes, dur: dur, at: Date.now() });
+      state[n] = { assetId: r.id, dur: dur };
+      verdict(n, dur);
+      progress();
+      if (old && old !== r.id) { try { await assets.delete(old); } catch (e) {} }
+    } catch (e) {
+      var code = e && e.code;
+      var text = code === 'too_large' ? 'Fail terlalu besar (had 20 MB).' :
+                 code === 'quota_or_state' ? 'Ruang simpanan penuh.' :
+                 code === 'rate_limited' ? 'Terlalu laju, cuba lagi sebentar.' : 'Gagal dimuat naik. Cuba lagi.';
+      setChip(n, text, 'bad');
+    } finally {
+      setBusy(n, false);
+    }
+  }
+
+  function render(snap) {
+    snap.docs.forEach(function (d) {
+      var v = d.data();
+      if (!v || !els[v.scene]) return;
+      var n = v.scene;
+      var changed = !state[n] || state[n].assetId !== v.assetId;
+      state[n] = { assetId: v.assetId, dur: v.dur };
+      if (changed) {
+        els[n].aud.src = '/_blob/' + v.assetId; els[n].aud.hidden = false;
+      }
+      verdict(n, v.dur);
+    });
+    progress();
+  }
+
+  (async function boot() {
+    try {
+      assets = await window.claude.use('assets');
+      db = await window.claude.use('db');
+    } catch (e) { assets = null; db = null; }
+    if (!assets || !db) {
+      show('Halaman ini perlu dibuka oleh pemilik yang sudah log masuk supaya rakaman boleh disimpan.');
+      SCENES.forEach(function (s) { els[s.n].btns.forEach(function (b) { b.style.opacity = 0.4; b.style.pointerEvents = 'none'; }); });
+      return;
+    }
+    var timer = setTimeout(function () { show('Rakaman tersimpan belum dapat dimuat. Anda masih boleh muat naik rakaman baharu.'); }, 10000);
+    db.collection('voice').onSnapshot(function (snap) {
+      if (!snap.metadata.fromCache) clearTimeout(timer);
+      render(snap);
+    }, function () { clearTimeout(timer); show('Rakaman tersimpan tidak dapat dibaca sekarang.'); });
+  })();
+  progress();
+})();
+</script>
