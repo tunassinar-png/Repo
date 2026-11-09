@@ -4,6 +4,7 @@ import os, sys, subprocess
 import numpy as np, cv2
 from PIL import Image, ImageDraw, ImageFont
 from content import SCENES, LABEL_WIN, sub_cues, write_srt
+import graphics as G
 
 W, H, FPS = 1920, 1080, 30
 f32 = np.float32
@@ -122,7 +123,11 @@ def build():
 
 
 def frame(L, t):
-    cv = np.zeros((H, W, 4), f32)
+    fl = G.floaters(t)
+    cv = fl.copy() if fl is not None else np.zeros((H, W, 4), f32)
+    r = G.panel(t)
+    if r is not None:
+        over(cv, r[0], G.PX + r[2], G.PY, r[1])
     for lay, (a, b) in L['labels']:
         op = fade(t, a, b)
         if op > 0:
