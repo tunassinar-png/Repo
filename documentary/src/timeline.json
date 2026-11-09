@@ -130,44 +130,44 @@
   "vo": [
     {
       "id": "01",
-      "at": 0.8,
-      "max": 4.2,
+      "at": 0.5,
+      "max": 4.9,
       "text": "Apa akan jadi… sekiranya semua wanita di dunia ni… cantik?"
     },
     {
       "id": "02",
-      "at": 5.1,
-      "max": 7.2,
+      "at": 4.8,
+      "max": 8.1,
       "text": "Sejak azali, kecantikan dianggap anugerah. Industrinya bernilai lebih empat ratus bilion dolar setahun."
     },
     {
       "id": "03",
-      "at": 12.4,
-      "max": 8.0,
+      "at": 13.0,
+      "max": 9.0,
       "text": "Sekarang, bayangkan. Esok pagi, lebih empat bilion wanita… semuanya cantik."
     },
     {
       "id": "04",
       "at": 22.4,
-      "max": 8.8,
+      "max": 9.9,
       "text": "Tapi sesuatu itu bernilai kerana ia jarang. Bila semua orang memilikinya, cantik tak lagi membezakan sesiapa."
     },
     {
       "id": "05",
       "at": 32.6,
-      "max": 8.6,
+      "max": 9.6,
       "text": "Industri kecantikan mungkin goyah. Namun manusia tetap mahu membezakan diri… cuma di tempat lain."
     },
     {
       "id": "06",
       "at": 42.6,
-      "max": 8.2,
+      "max": 9.0,
       "text": "Mereka akan mula menilai akhlak, ilmu, dan kemahiran. Apa yang ada… di dalam."
     },
     {
       "id": "07",
-      "at": 52.0,
-      "max": 7.4,
+      "at": 51.8,
+      "max": 8.0,
       "text": "Mungkin dunia tak jadi lebih baik. Tapi kita mula bertanya… siapa yang paling bermakna?"
     }
   ]
