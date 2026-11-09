@@ -1,0 +1,25 @@
+{
+  "fps": 30,
+  "total": 1800,
+  "scenes": [
+    {"id": "title",   "from": 0,    "dur": 150, "label": "PEMBUKAAN"},
+    {"id": "intro",   "from": 150,  "dur": 210, "label": "BAB 1 · OBSESI KITA"},
+    {"id": "imagine", "from": 360,  "dur": 300, "label": "BAB 2 · BAYANGKAN"},
+    {"id": "value",   "from": 660,  "dur": 300, "label": "BAB 3 · NILAI KELANGKAAN"},
+    {"id": "industry","from": 960,  "dur": 300, "label": "BAB 4 · INDUSTRI"},
+    {"id": "newstd",  "from": 1260, "dur": 300, "label": "BAB 5 · PIAWAIAN BAHARU"},
+    {"id": "outro",   "from": 1560, "dur": 240, "label": "PENUTUP"}
+  ],
+  "popups": [
+    {"at": 205,  "dur": 110, "tag": "FAKTA",   "icon": "coin",  "title": "Industri kecantikan global", "text": "Bernilai lebih USD 400 bilion setahun (anggaran)."},
+    {"at": 400,  "dur": 110, "tag": "BAYANGKAN","icon": "globe", "title": "4 bilion+ wanita", "text": "Semuanya dianggap cantik. Tiada pengecualian."},
+    {"at": 540,  "dur": 100, "tag": "SOALAN",  "icon": "q",     "title": "Masih ada 'pilihan'?", "text": "Bila semua sama, apa lagi yang nak dibandingkan?"},
+    {"at": 705,  "dur": 110, "tag": "KONSEP",  "icon": "star",  "title": "Nilai lahir daripada kelangkaan", "text": "Bila semua cantik, 'cantik' tak lagi membezakan sesiapa."},
+    {"at": 850,  "dur": 100, "tag": "PERSEPSI","icon": "eye",   "title": "Cantik itu subjektif", "text": "Otak kita menilai berdasarkan perbandingan."},
+    {"at": 1010, "dur": 110, "tag": "ANALISIS","icon": "down",  "title": "Permintaan mungkin merudum", "text": "Kosmetik, estetik & penapis hidup daripada rasa 'kurang cantik'."},
+    {"at": 1150, "dur": 100, "tag": "REALITI", "icon": "bolt",  "title": "Tapi manusia suka membezakan", "text": "Persaingan tak hilang, cuma berpindah ke tempat lain."},
+    {"at": 1300, "dur": 110, "tag": "SEJARAH", "icon": "clock", "title": "Piawaian sentiasa berubah", "text": "Ia berbeza mengikut zaman, budaya dan tempat."},
+    {"at": 1440, "dur": 100, "tag": "PIAWAIAN BAHARU","icon": "spark","title": "Akhlak · Ilmu · Kemahiran", "text": "Nilai yang sebenar mula dilihat."},
+    {"at": 1620, "dur": 110, "tag": "RENUNGAN","icon": "heart", "title": "Nilai seorang wanita", "text": "Tak pernah terletak pada rupa semata-mata."}
+  ]
+}
