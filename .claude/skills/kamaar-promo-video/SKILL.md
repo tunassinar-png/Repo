@@ -8,7 +8,8 @@ description: Build a 9:16 (TikTok / Facebook Reels) promo video for KAMAAR BEDDI
 Turns presenter footage into a finished vertical promo video. The user writes in
 Malay; reply in Malay. Worked examples (exact timings, wording, decisions):
 `reference/ipoh-nov-2026.md` (video 1, footage with burned-in captions) and
-`reference/ipoh-hari1.md` (video 2, no captions: transcribed with Whisper, with music).
+`reference/ipoh-hari1.md` (video 2, no captions: transcribed with Whisper, with music) and
+`reference/kulim-12nov.md` (video 3: a re-edit of video 1's footage for another event).
 
 ## What it produces
 - **Price pop-ups**: one per spoken price, bounce-in, product name (white bold) above
@@ -30,7 +31,8 @@ Malay; reply in Malay. Worked examples (exact timings, wording, decisions):
 ## Files
 - `scripts/render_kamaar_popups.py` - renderer. Defaults = video 1; override per video with
   `--config configs/<video>.py` (any UPPERCASE constant: `POPUPS`, `HOOK`, `INTRO`, `EVENTS`,
-  `BADGE`, `RAYS`, `SCRIM`, `LABEL_SHOW`, `OVERLAY_H`, `PREVIEW_T`, ...). Options: `--width`,
+  `BADGE`, `RAYS`, `SCRIM`, `LABEL_SHOW`, `LABEL_LINES`, `END_CARD` (date/day/time/venue lines/place/badge
+  texts of the end card), `OVERLAY_H`, `PREVIEW_T`, ...). Options: `--width`,
   `--logo`, `--vo`, `--music`, `--sfx`, `--preview-dir`. Needs ffmpeg, Pillow, numpy.
 - `scripts/make_music.py` - music + SFX WAVs from the config (needs scipy).
 - `scripts/asr_setup.sh`, `asr_chunks.py`, `asr_prefix_scan.py`, `asr_window.py` - Whisper
@@ -41,9 +43,14 @@ Malay; reply in Malay. Worked examples (exact timings, wording, decisions):
 - `configs/ipoh_hari1_4x5.py` - the same video in 4:5: imports the 9:16 config and overrides `H`,
   `CROP_Y`, text `cy`, banner `y`, burst positions, `POPUP_CENTER_Y`, `LABEL_CY`, `RAYS_CY`,
   `SCRIM_H`, `OVERLAY_H`, `END_CARD_DY` (use it as the template for any other aspect ratio).
-- `reference/` - the two worked examples.
+- `configs/kulim_12nov_4x5.py` - video 3, 4:5, standalone (copy for a re-edit of the same footage).
+- `reference/` - the three worked examples.
 
 ## Workflow
+0. **Is it new footage?** The user re-uses the same recordings for different events (video 3 = video 1
+   with new captions and a new intro voice). Cross-correlate the audio against earlier uploads
+   (2 s windows, +/-1 s lag): wherever it matches (>0.9) re-use the measured times and only
+   transcribe the rest. Also look for new burned-in captions: they decide `CROP_Y`.
 1. **Understand the footage.** `ffprobe` it. Phone clips are often stored 1920x1080 with a
    -90 rotation: ffmpeg auto-rotates, so decode normally and it is 1080x1920. Make a 1 fps
    contact sheet (`ffmpeg -vf fps=1,scale=216:384,tile=8x6`) and read it: where the
@@ -92,6 +99,10 @@ Malay; reply in Malay. Worked examples (exact timings, wording, decisions):
   top ~150 px and bottom ~250 px; banners/text pops live at y 160-640 because the presenter's
   head starts ~y 660 (check each new footage; a presenter who walks toward the camera needs the
   banner gone before his head rises).
+- **Event facts differ per video** (venue, date, time, number of days). Never copy "2 HARI SAHAJA" or the
+  Ipoh venue: read them from this video's dialogue/captions, and leave a claim out (or use dialogue
+  words such as "JOM KE SINI!") when it was not said. A bare upload with no instruction = apply the
+  latest established recipe, state the assumptions (format, wording, event facts) in the reply.
 - Keep persistent text minimal (small, outlined, no box).
 - **Voice**: the voice is the presenter's. This environment cannot generate voice-over; the end
   card has no VO unless the user supplies a file (`--vo`).

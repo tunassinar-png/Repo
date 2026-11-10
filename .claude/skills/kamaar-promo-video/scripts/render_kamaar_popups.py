@@ -124,6 +124,9 @@ EVENTS = [
 RAYS = [(1.72, 3.85)]    # (start, end) windows of the rotating light rays
 RAYS_CY = 500            # y of the ray centre (design units)
 CROP_Y = 0               # when H < 1920 (e.g. 4:5 = 1080x1350): top of the crop window in the 1080x1920 footage
+END_CARD = dict(date="7 & 8 NOVEMBER 2026", day="SABTU & AHAD", time="9 PAGI – 10 MALAM",
+                venue=["DEWAN SERBAGUNA", "KAMPUNG TERSUSUN"], place="TAWAS TAMBAHAN, IPOH",
+                badge="2 HARI SAHAJA!")   # texts of the end card; place / badge may be None
 END_CARD_DY = 0          # shifts every end-card element (design units), for non-9:16 canvases
 SCRIM = [(0.9, 11.0)]    # windows of the dark top gradient behind intro text
 SCRIM_STRENGTH = 0.55
@@ -769,21 +772,26 @@ def build_end_card(last_frame, logo_path):
             size -= 2
 
     els = []  # (sprite, center_y, start_time, kind)
-    els.append((fit("7 & 8 NOVEMBER 2026", "Black", 92, YELLOW, stroke=4,
-                    stroke_fill=RED, tracking=1), 430, 0.35, "slide"))
-    els.append((fit("SABTU & AHAD", "ExtraBold", 74, WHITE, tracking=4), 575, 0.65, "slide"))
-    els.append((pill_sprite("9 PAGI – 10 MALAM", "ExtraBold", 58, WHITE,
+    ec = END_CARD
+    els.append((fit(ec["date"], "Black", 92, YELLOW, stroke=4, stroke_fill=RED, tracking=1),
+                430, 0.35, "slide"))
+    els.append((fit(ec["day"], "ExtraBold", 74, WHITE, tracking=4), 575, 0.65, "slide"))
+    els.append((pill_sprite(ec["time"], "ExtraBold", 58, WHITE,
                             (255, 255, 255, 30), outline=YELLOW + (255,), tracking=3),
                 715, 0.95, "slide"))
     dw, dh = round(200 * K), round(8 * K)
     div = Image.new("RGBA", (dw, dh), (0, 0, 0, 0))
     ImageDraw.Draw(div).rounded_rectangle((0, 0, dw - 1, dh - 1), dh // 2, fill=YELLOW + (255,))
     els.append((div, 835, 1.20, "slide"))
-    els.append((fit("DEWAN SERBAGUNA", "ExtraBold", 66, WHITE, tracking=2), 925, 1.30, "slide"))
-    els.append((fit("KAMPUNG TERSUSUN", "ExtraBold", 66, WHITE, tracking=2), 1010, 1.45, "slide"))
-    els.append((fit("TAWAS TAMBAHAN, IPOH", "Bold", 54, YELLOW, tracking=3), 1115, 1.65, "slide"))
-    els.append((pill_sprite("2 HARI SAHAJA!", "Black", 68, WHITE, RED + (255,),
-                            px=64, py=26, tracking=2), 1255, 2.00, "pop"))
+    y, t0 = 925, 1.30
+    for line in ec["venue"]:
+        els.append((fit(line, "ExtraBold", 66, WHITE, tracking=2), y, t0, "slide"))
+        y, t0 = y + 85, t0 + 0.15
+    if ec.get("place"):
+        els.append((fit(ec["place"], "Bold", 54, YELLOW, tracking=3), y + 20, t0 + 0.05, "slide"))
+    if ec.get("badge"):
+        els.append((pill_sprite(ec["badge"], "Black", 68, WHITE, RED + (255,),
+                                px=64, py=26, tracking=2), 1255, 2.00, "pop"))
     logo = logo_sprite(logo_path)
     els.append((logo, 1450, 2.60, "fade"))
 
