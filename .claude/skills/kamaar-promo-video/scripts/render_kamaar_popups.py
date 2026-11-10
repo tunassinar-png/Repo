@@ -130,6 +130,8 @@ END_CARD = dict(date="7 & 8 NOVEMBER 2026", day="SABTU & AHAD", time="9 PAGI –
 END_CARD_DY = 0          # shifts every end-card element (design units), for non-9:16 canvases
 SCRIM = [(0.9, 11.0)]    # windows of the dark top gradient behind intro text
 SCRIM_STRENGTH = 0.55
+VOICE_GAIN = 0.72        # footage voice level in the mix when music/sfx are used (hot phone voice: lower it)
+BED_GAIN = 1.0           # music + sfx level in the mix
 PREVIEW_T = None         # {seconds: name} frames dumped with --preview-dir (None = defaults)
 # Persistent minimal label: date + location, small, top-centre. Hidden while the
 # big intro banners (same info) are on screen, and replaced by the end card.
@@ -950,7 +952,7 @@ def main():
     fade_st = max(0.0, n / FPS - 0.35)
     cmd = ["ffmpeg", "-v", "error", "-y", "-i", video_tmp, "-i", args.input]
     fmt = "aformat=sample_fmts=fltp:sample_rates=44100:channel_layouts=stereo"
-    vol = "volume=0.72," if (args.music or args.sfx) else ""   # head-room for the music + sfx
+    vol = f"volume={VOICE_GAIN}," if (args.music or args.sfx) else ""   # head-room for the music + sfx
     flt = (f"[1:a]{fmt},{vol}afade=t=out:st={fade_st:.3f}:d=0.35,apad=whole_dur={total:.3f}[a0]")
     labels, nxt = ["[a0]"], 2
     if args.vo:
@@ -961,7 +963,7 @@ def main():
     for opt, lab in ((args.music, "[m]"), (args.sfx, "[s]")):
         if opt:
             cmd += ["-i", opt]
-            flt += f";[{nxt}:a]{fmt},apad=whole_dur={total:.3f}{lab}"
+            flt += f";[{nxt}:a]{fmt},volume={BED_GAIN},apad=whole_dur={total:.3f}{lab}"
             labels.append(lab); nxt += 1
     if len(labels) > 1:
         flt += f";{''.join(labels)}amix=inputs={len(labels)}:normalize=0:duration=first,alimiter=limit=0.66:level=0:attack=5:release=70[a]"

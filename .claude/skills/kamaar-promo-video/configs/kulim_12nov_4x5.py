@@ -127,6 +127,8 @@ MUSIC_ANCHOR = 0.30
 MUSIC_SECTIONS = [(0.0, 4.4, 3), (4.4, 8.9, 2), (8.9, 36.0, 3), (36.0, 45.0, 4), (45.0, 60.0, 3)]
 MUSIC_RISERS = [(7.0, 9.0), (42.6, 45.05)]
 MUSIC_GAIN_DB = -12
+VOICE_GAIN = 0.44    # this footage's voice is hotter (-6.8 dBFS RMS) than video 2: 0.72 gave -8.5 LUFS,
+BED_GAIN = 0.62      # 0.55 -> -9.2; 0.44 / 0.62 (music + sfx, same ratio to the voice) ~ -11 LUFS
 MUSIC_DUCK_DB = -10
 
 PREVIEW_T = {0.45: "a_cari", 1.20: "b_tilam", 1.90: "c_dewan", 2.40: "d_alfateh", 2.70: "e_taman",
