@@ -1,5 +1,5 @@
 """
-Config: Kulim sale 12 Nov 2026 (Dewan Masjid Al-Fatih) - presenter video "copy_F7E8DC9F" (47.04 s),
+Config: Kulim sale 12 Nov 2026 (Dewan Masjid Al-Fateh) - presenter video "copy_F7E8DC9F" (47.04 s),
 4:5 (1080x1350; --width 1440 -> 1440x1800).
 
 Footage = the Ipoh hall video re-edited: the audio is IDENTICAL from 11.5 s on (correlation
@@ -7,15 +7,17 @@ Footage = the Ipoh hall video re-edited: the audio is IDENTICAL from 11.5 s on (
 dialogue, read from the burned-in word-highlighted yellow captions (4 fps, +/-0.12 s) and
 confirmed by Whisper turbo + large-v3:
   0.2  Cari bantal dan tilam jom ke              (Cari 0.3, tilam 0.95)
-  1.7  Dewan Masjid Al-Fatih                      (Dewan 1.7, Al-Fatih 2.2)
+  1.7  Dewan Masjid Al-Fateh                      (Dewan 1.7, Al-Fateh 2.2; captions say "Fatih", the user spells Al Fateh)
   2.55 Taman Mutiara
-  3.25 Sungai Kob, Kulim                          (Kob: caption spelling; Whisper wrote "Kop")
+  3.25 Sungai Kob, Kulim                          (Kob confirmed by the user; Whisper wrote "Kop")
   4.5  pada 12/11/2026 (12 November 2026)         (hari Khamis 6.25)
   7.0  dari 9.00 pagi (7.2) hingga 10 malam (8.0)
   9.0  bantal dan tilam pelbagai corak
   11.0+ same as video 1 (prices, kain, sarung bantal, Tilam Toto, Tilam single, bantal peluk ...)
 The burned-in captions of this footage sit at y 1445-1555 of the 1080x1920 frame, so the 4:5
 crop window is y 80..1430 (CROP_Y = 80) and the captions are cropped out.
+User's confirmed wording: "Promosi bantal & tilam di Dewan Masjid Al Fateh, Taman Mutiara, Sungai Kob, Kulim.
+Pada 12 Nov 2026 hari Khamis jam 9 pagi hingga 10 malam."
 Run: make_music.py IN.mp4 THIS.py DIR ; render_kamaar_popups.py IN.mp4 OUT.mp4 --config THIS.py
      --music DIR/music_ducked.wav --sfx DIR/sfx.wav [--width 1440]
 """
@@ -31,13 +33,13 @@ OVERLAY_H = 1350
 END_CARD_DY = -260
 BADGE = None
 
-LABEL_LINES = [("12 NOV 2026", "ExtraBold", 36, "Y"),
-               ("DEWAN MASJID AL-FATIH, TAMAN MUTIARA, SUNGAI KOB, KULIM", "Bold", 24, "W")]
+LABEL_LINES = [("12 NOV 2026 · KHAMIS", "ExtraBold", 36, "Y"),
+               ("DEWAN MASJID AL-FATEH, TAMAN MUTIARA, SUNGAI KOB, KULIM", "Bold", 24, "W")]
 LABEL_SHOW = [(0.3, 4.3), (9.0, 47.0)]
 
 END_CARD = dict(date="12 NOVEMBER 2026", day="KHAMIS", time="9 PAGI – 10 MALAM",
-                venue=["DEWAN MASJID AL-FATIH", "TAMAN MUTIARA"], place="SUNGAI KOB, KULIM",
-                badge="JOM KE SINI!")     # "jom ke ..." is in the dialogue; no "1 hari" claim
+                venue=["DEWAN MASJID AL-FATEH", "TAMAN MUTIARA"], place="SUNGAI KOB, KULIM",
+                badge="PROMOSI BANTAL & TILAM", badge_size=50)   # user's wording; no "1 hari" claim
 
 # ---- price pop-ups: times from video 1 (same audio) ----
 POPUPS = [
@@ -63,7 +65,7 @@ HOOK = [
     _slam("CARI BANTAL", 112, _Y, _Y, 0.30, 1.60, 250),
     _slam("& TILAM?", 190, _W, _R, 0.95, 1.60, 410, 9),
     _slam("DEWAN MASJID", 104, _Y, _Y, 1.70, 3.20, 250),
-    _slam("AL-FATIH", 190, _W, _R, 2.20, 3.20, 410, 9),
+    _slam("AL-FATEH", 190, _W, _R, 2.20, 3.20, 410, 9),
     _slam("TAMAN MUTIARA", 84, _W, _Y, 2.55, 3.20, 545, 6),
     _slam("SUNGAI KOB", 108, _Y, _Y, 3.25, 4.40, 250),
     _slam("KULIM", 190, _W, _R, 3.75, 4.40, 410, 9),
@@ -127,7 +129,7 @@ MUSIC_RISERS = [(7.0, 9.0), (42.6, 45.05)]
 MUSIC_GAIN_DB = -12
 MUSIC_DUCK_DB = -10
 
-PREVIEW_T = {0.45: "a_cari", 1.20: "b_tilam", 1.90: "c_dewan", 2.40: "d_alfatih", 2.70: "e_taman",
+PREVIEW_T = {0.45: "a_cari", 1.20: "b_tilam", 1.90: "c_dewan", 2.40: "d_alfateh", 2.70: "e_taman",
              3.50: "f_sungai", 3.95: "g_kulim", 5.20: "h_tarikh", 6.60: "i_khamis", 7.80: "j_masa",
              9.30: "k_bantal", 10.10: "l_corak", 12.60: "m_rm5", 16.30: "n_6biji", 19.00: "o_kain1",
              19.60: "p_nipis", 20.50: "q_tebal", 24.90: "r_sarung", 27.60: "s_toto", 30.00: "t_single",

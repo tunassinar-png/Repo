@@ -790,7 +790,7 @@ def build_end_card(last_frame, logo_path):
     if ec.get("place"):
         els.append((fit(ec["place"], "Bold", 54, YELLOW, tracking=3), y + 20, t0 + 0.05, "slide"))
     if ec.get("badge"):
-        els.append((pill_sprite(ec["badge"], "Black", 68, WHITE, RED + (255,),
+        els.append((pill_sprite(ec["badge"], "Black", ec.get("badge_size", 68), WHITE, RED + (255,),
                                 px=64, py=26, tracking=2), 1255, 2.00, "pop"))
     logo = logo_sprite(logo_path)
     els.append((logo, 1450, 2.60, "fade"))
