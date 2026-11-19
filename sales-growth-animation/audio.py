@@ -2,7 +2,8 @@
 120 BPM, C major:  C | G | F -> C   (hit on the zoom-out at 4.0 s, resolve on the final chord)."""
 import numpy as np, wave, sys
 
-SR = 48000; DUR = 6.0; N = int(SR * DUR)
+import os
+SR = 48000; DUR = float(os.environ.get('DUR', 6.0)); LONG = DUR > 7; N = int(SR * DUR)
 t = np.arange(N) / SR
 rng = np.random.default_rng(7)
 mtof = lambda m: 440.0 * 2 ** ((m - 69) / 12)
@@ -51,6 +52,8 @@ CH = [  # (start, end, chord midi notes, bass root)
     (4.0, 5.0, [41, 45, 48, 53, 57, 60], 29),  # F
     (5.0, 6.0, [48, 52, 55, 60, 64, 67], 36),  # C (resolve)
 ]
+if LONG:
+    CH = CH[:2] + [(4.0, 6.0, [41, 45, 48, 53, 57, 60], 29), (6.0, 8.0, [48, 52, 55, 60, 64, 67], 36)]
 for (a, b, notes, root) in CH:
     n = int((b - a) * SR) + int(0.25 * SR)
     for m in notes:
@@ -119,7 +122,7 @@ for beat in np.arange(0, DUR, 0.5):
 for beat in np.arange(2.0, DUR, 0.25):            # 8ths hats
     off = (int(round(beat / 0.25)) % 2) == 1
     place(drum, hat(0.55 if off else 0.35), beat, 0.14, pan=0.35)
-for beat in (3.0, 3.5, 4.5, 5.0, 5.5):             # backbeat claps
+for beat in ((3.5, 4.5, 5.5, 6.5, 7.5) if LONG else (3.0, 3.5, 4.5, 5.0, 5.5)):             # backbeat claps
     place(drum, clap(0.8), beat, 0.26)
 for tt0 in np.arange(3.5, 4.0, 0.125):             # snare-roll style build into the zoom-out
     place(drum, clap(0.4 + (tt0 - 3.5) * 1.2), tt0, 0.13)
@@ -133,7 +136,7 @@ crash = noise_hp(n, 1) * np.exp(-tt * 2.4) * np.minimum(1, tt * 300)
 place(fx, crash, 4.0, 0.24, 0.0)
 boom = np.sin(2*np.pi*(34 + 70*np.exp(-tt*6)).cumsum()/SR) * np.exp(-tt * 3.2)
 place(fx, boom, 4.0, 0.55, 0.0)
-place(fx, crash * 0.7, 5.0, 0.12, 0.0)
+place(fx, crash * 0.7, 6.0 if LONG else 5.0, 0.12 if not LONG else 0.2, 0.0)
 
 # ---------------- lead / bell melody (target reveal) -------------------
 def bell(f, dur):
@@ -141,8 +144,9 @@ def bell(f, dur):
     sig = (np.sin(2*np.pi*f*tt) + .5*np.sin(2*np.pi*2.0*f*tt)*np.exp(-tt*4) + .3*np.sin(2*np.pi*3.01*f*tt)*np.exp(-tt*6) + .15*np.sin(2*np.pi*4.2*f*tt)*np.exp(-tt*9))
     return sig * np.exp(-tt * (2.2 if dur > 0.6 else 5)) * np.minimum(1, tt * 600)
 mel = [(4.0, 84, .5), (4.25, 81, .4), (4.5, 84, .4), (4.75, 89, .4), (5.0, 88, .45), (5.25, 91, .45), (5.5, 96, 0.5)]
+if LONG: mel = [(4.0, 84, .5), (4.5, 81, .5), (5.0, 84, .5), (5.5, 89, .5), (6.0, 88, .5), (6.5, 91, .6), (7.0, 96, 0.9)]
 for (st, m, dd) in mel:
-    place(lead, bell(mtof(m), dd + .6), st, 0.19 if st < 5.5 else 0.22, pan=0.15 if m % 2 else -0.15)
+    place(lead, bell(mtof(m), dd + .6), st, 0.19 if st < (7.0 if LONG else 5.5) else 0.22, pan=0.15 if m % 2 else -0.15)
 # soft chime motif in the first scenes
 for (st, m) in ((0.5, 76), (1.0, 79), (2.5, 83), (3.0, 79)):
     place(lead, bell(mtof(m), 0.8), st, 0.09, pan=-0.3)
@@ -167,7 +171,7 @@ if '--report' in sys.argv:
 # master: intro swell, outro fade, soft clip, normalise
 swell = np.clip(t / 0.5, 0, 1) ** 0.5 * 0.3 + 0.7 * np.clip(t / 2.0, 0, 1)
 mix *= np.where(t < 2.0, swell, 1.0)
-fade_out = np.clip((DUR - t) / 0.55, 0, 1) ** 1.2
+fade_out = np.clip((DUR - t) / (0.9 if LONG else 0.55), 0, 1) ** 1.2
 mix *= fade_out
 mix *= np.clip(t / 0.01, 0, 1)
 mix = np.tanh(mix * 1.2) / 1.2

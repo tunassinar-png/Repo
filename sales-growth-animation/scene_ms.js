@@ -11,7 +11,9 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 /* constants & helpers                                                 */
 /* ------------------------------------------------------------------ */
 const W = 1920, H = 1080;
-const DUR = 6;
+const DUR = 8;                 // output length (s)
+// scenes 1-2 keep their original timing; scene 3 (zoom-out -> target) is slowed so the final state is reached at ~7.1 s, then holds
+const warp = (tv) => tv < 4 ? tv : Math.min(6, 4 + (tv - 4) * 0.65);
 const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
 const prog = (t, a, b) => clamp((t - a) / (b - a));
 const lerp = (a, b, k) => a + (b - a) * k;
@@ -596,7 +598,8 @@ await document.fonts.load('italic 800 40px Inter');
 await document.fonts.load('700 40px Inter');
 await document.fonts.ready;
 
-window.renderAt = (t) => {
+window.renderAt = (tv) => {
+  const t = warp(tv);
   setCamera(t);
   drawBG(t, lookV.x, lookV.y);
   real.update(t); refl.update(t);
