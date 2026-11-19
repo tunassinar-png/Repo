@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Sales Growth Infographic</title>
+<style>
+  html, body { margin: 0; background: #030a1c; overflow: hidden; }
+  #stage { position: relative; width: 1920px; height: 1080px; overflow: hidden;
+           font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif; color: #fff; }
+  #gl { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; display: block; }
+  #vignette { position: absolute; inset: 0; pointer-events: none;
+    background: radial-gradient(ellipse 75% 70% at 50% 46%, rgba(0,0,0,0) 55%, rgba(2,6,18,.55) 100%); }
+
+  #scrim { position: absolute; left: 0; right: 0; bottom: 0; height: 330px; opacity: 0; pointer-events: none;
+    background: linear-gradient(180deg, rgba(3,9,28,0) 0%, rgba(3,9,28,.55) 45%, rgba(3,9,28,.82) 100%); }
+  .ov { position: absolute; left: 0; top: 0; opacity: 0; white-space: nowrap; will-change: transform, opacity; }
+
+  .card { padding: 17px 34px 17px; border-radius: 16px;
+    background: linear-gradient(180deg, rgba(22,50,112,.88), rgba(8,20,54,.92));
+    border: 1.5px solid rgba(238,190,84,.8);
+    box-shadow: 0 14px 44px rgba(0,0,0,.5), 0 0 30px rgba(238,190,84,.22), inset 0 1px 0 rgba(255,255,255,.2);
+    font-weight: 700; font-size: 38px; line-height: 1; letter-spacing: .03em; }
+  .card .yr { color: #f5cc66; font-weight: 800; }
+
+  .gold { background: linear-gradient(180deg, #fff7d6 0%, #f7d56e 38%, #e2a93a 70%, #b9852a 100%);
+          -webkit-background-clip: text; background-clip: text; color: transparent; }
+
+  #badge { display: flex; align-items: baseline; gap: 18px; font-weight: 800; }
+  #badge .pct { font-size: 104px; line-height: .95; letter-spacing: -.01em; font-variant-numeric: tabular-nums;
+                filter: drop-shadow(0 0 18px rgba(245,200,90,.55)) drop-shadow(0 4px 10px rgba(0,0,0,.5)); }
+  #badge .lbl { font-size: 44px; letter-spacing: .09em; color: #fff;
+                text-shadow: 0 0 22px rgba(80,150,255,.8), 0 3px 10px rgba(0,0,0,.55); }
+
+  #headline { left: 50%; top: 0; text-align: center; }
+  #headline .l1 { font-weight: 800; font-size: 70px; line-height: 1; letter-spacing: .015em;
+                  text-shadow: 0 6px 30px rgba(0,0,0,.6); }
+  #headline .l1 .w { color: #fff; }
+  #headline .l1 .g { background: linear-gradient(180deg, #fff7d6 0%, #f7d56e 38%, #e2a93a 70%, #b9852a 100%);
+                     -webkit-background-clip: text; background-clip: text; color: transparent;
+                     filter: drop-shadow(0 0 16px rgba(245,200,90,.4)); }
+  #headline .l2 { margin-top: 20px; display: inline-flex; align-items: center; gap: 28px;
+                  font-weight: 700; font-size: 38px; letter-spacing: .34em; color: #f5cc66;
+                  text-shadow: 0 0 22px rgba(245,200,90,.45); padding-left: .34em; }
+  #headline .rule { width: 130px; height: 2px; background: linear-gradient(90deg, rgba(245,200,90,0), rgba(245,200,90,.95)); }
+  #headline .rule.r { transform: scaleX(-1); }
+</style>
+</head>
+<body>
+<div id="stage">
+  <canvas id="gl"></canvas>
+  <div id="vignette"></div>
+  <div id="scrim"></div>
+  <div id="card1" class="ov card"><span class="yr">2025</span> – RM1.2 MILLION</div>
+  <div id="card2" class="ov card"><span class="yr">2026</span> – RM1.8 MILLION</div>
+  <div id="badge" class="ov"><span class="pct gold" id="pct">+50%</span><span class="lbl">SALES GROWTH</span></div>
+  <div id="headline" class="ov">
+    <div class="l1"><span class="g">RM3 MILLION</span> <span class="w">SALES TARGET</span></div>
+    <div class="l2"><span class="rule"></span><span id="l2t">WITHIN 3 YEARS</span><span class="rule r"></span></div>
+  </div>
+</div>
+<script type="importmap">
+{ "imports": {
+  "three": "./node_modules/three/build/three.module.js",
+  "three/addons/": "./node_modules/three/examples/jsm/"
+} }
+</script>
+<script type="module" src="./scene.js"></script>
+</body>
+</html>
