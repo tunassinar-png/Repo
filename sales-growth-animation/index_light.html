@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<title>Pencapaian dan Sasaran Jualan Syarikat (Putih-Emas)</title>
+<style>
+  html, body { margin: 0; background: #f4eee0; overflow: hidden; }
+  #stage { position: relative; width: 1920px; height: 1080px; overflow: hidden;
+           font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif; color: #fff; }
+  #gl { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; display: block; }
+  #vignette { position: absolute; inset: 0; pointer-events: none;
+    background: radial-gradient(ellipse 80% 75% at 50% 48%, rgba(0,0,0,0) 65%, rgba(120,95,50,.16) 100%); }
+  .ov { position: absolute; left: 0; top: 0; opacity: 0; white-space: nowrap; will-change: transform, opacity; }
+
+  /* ---------- header ---------- */
+  #logo { left: 64px; top: 20px; }
+  #logo img { display: block; width: 500px; height: auto; filter: drop-shadow(0 3px 10px rgba(180,140,60,.25)); }
+  #logo .word { font-style: italic; font-weight: 800; font-size: 100px; line-height: 1; letter-spacing: .005em;
+                text-shadow: 0 6px 22px rgba(0,10,60,.55); position: relative; display: inline-block; }
+  #logo .word sup { font-style: normal; font-weight: 600; font-size: 20px; position: absolute; top: 8px; right: -26px; }
+  #logo svg { position: absolute; left: 6px; top: 98px; width: 440px; height: 44px; overflow: visible; }
+  #divider { left: 630px; top: 36px; width: 3px; height: 130px; background: linear-gradient(180deg, rgba(200,150,50,0), #c8962e, rgba(200,150,50,0)); }
+  #title { left: 690px; top: 14px; }
+  #title .l1 { font-weight: 800; font-size: 76px; line-height: 1.05; letter-spacing: .005em; color: #0b1f52; text-shadow: 0 2px 10px rgba(255,255,255,.7); }
+  #title .l2 { display: inline-block; margin-top: 2px; padding: 2px 70px 2px 34px; font-weight: 800; font-size: 76px; line-height: 1.05; color: #f7d56e;
+               background: linear-gradient(90deg, #08183f 0%, #0f2a6b 60%, #16357a 85%, rgba(22,53,122,0) 100%);
+               clip-path: polygon(0 0, 100% 0, 96% 100%, 0 100%); margin-left: -30px; }
+
+  /* ---------- bar overlays ---------- */
+  .bt { text-align: center; font-weight: 800; line-height: .95; text-shadow: 0 5px 16px rgba(0,20,90,.65); }
+  .bt .a { font-size: 56px; letter-spacing: -.01em; }
+  .bt .b { font-size: 38px; margin-top: 4px; }
+  .bt.gold { color: #0b1f52; text-shadow: 0 2px 8px rgba(255,235,160,.5); }
+  .bt.gold .a { font-size: 92px; } .bt.gold .b { font-size: 70px; }
+  .plate { min-width: 250px; text-align: center; padding: 6px 12px 5px; border-radius: 12px; font-weight: 800; font-size: 40px; line-height: 1.05; color: #0b1f52;
+           background: linear-gradient(180deg, #ffffff 0%, #dde5f3 100%); box-shadow: 0 10px 26px rgba(0,10,50,.5), inset 0 -3px 0 rgba(120,140,190,.35); }
+  .plate.two { font-size: 32px; line-height: 1.1; padding: 6px 14px; min-width: 280px; }
+
+  /* ---------- badge ---------- */
+  #badge { text-align: center; padding: 14px 46px 12px; border-radius: 30px; border: 5px solid transparent;
+    background: linear-gradient(180deg, #e32a2a, #8f0b0b) padding-box, linear-gradient(180deg, #fff0b0, #e2a93a 60%, #b9852a) border-box;
+    box-shadow: 0 16px 40px rgba(0,0,0,.5), 0 0 44px rgba(230,60,40,.35), inset 0 2px 0 rgba(255,255,255,.35); }
+  #badge .s { font-weight: 800; font-size: 42px; letter-spacing: .02em; line-height: 1; text-shadow: 0 3px 8px rgba(80,0,0,.6); }
+  #badge .p { font-weight: 800; font-size: 128px; line-height: 1; letter-spacing: -.01em; font-variant-numeric: tabular-nums;
+              text-shadow: 0 5px 12px rgba(80,0,0,.55); margin-top: 2px; }
+
+  /* ---------- summary strip ---------- */
+  #sum { left: 70px; top: 876px; width: 1780px; height: 172px; }
+  #sumL { position: absolute; left: 0; top: 0; width: 1210px; height: 172px; box-sizing: border-box; border-radius: 30px 0 0 30px;
+    background: linear-gradient(180deg, rgba(255,255,255,.97), rgba(247,242,231,.97)); border: 3px solid #d4a02a; border-right: none;
+    box-shadow: 0 16px 40px rgba(110,85,40,.25), inset 0 1px 0 #fff; display: flex; align-items: center; padding-left: 30px; }
+  #sumL svg { width: 88px; height: 88px; flex: none; }
+  .col { display: flex; flex-direction: column; justify-content: center; padding: 0 24px; height: 108px; border-left: 2px solid rgba(232,184,74,.7); margin-left: 16px; }
+  .col:first-of-type { margin-left: 22px; }
+  .col .k { color: #0b1f52; font-weight: 700; font-size: 28px; letter-spacing: .01em; line-height: 1.1; }
+  .col .v { font-weight: 800; font-size: 46px; line-height: 1.05; color: #0b2a69; letter-spacing: -.005em; }
+  #sumR { position: absolute; left: 1178px; top: -4px; width: 600px; height: 180px; box-sizing: border-box; border-radius: 34px;
+    background: linear-gradient(180deg, #ffe58a 0%, #f6c445 50%, #d9a02a 100%); border: 3px solid #fff3c0;
+    box-shadow: 0 16px 44px rgba(0,0,0,.5), 0 0 40px rgba(255,200,70,.35), inset 0 2px 0 rgba(255,255,255,.7);
+    display: flex; align-items: center; padding-left: 26px; color: #0b1f52; }
+  #sumR svg { width: 118px; height: 118px; flex: none; }
+  #sumR .tx { margin-left: 16px; text-align: center; flex: 1; padding-right: 16px; }
+  #sumR .a { font-weight: 800; font-size: 40px; line-height: 1.05; }
+  #sumR .b { font-weight: 800; font-size: 74px; line-height: 1.0; color: #d3151c; letter-spacing: -.005em; }
+  #sumR .c { font-weight: 800; font-size: 29px; line-height: 1.1; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <canvas id="gl"></canvas>
+  <div id="vignette"></div>
+
+  <div id="logo" class="ov"><img src="kamaar-logo-black.png" alt="KAMAAR Beddings"></div>
+  <div id="divider" class="ov"></div>
+  <div id="title" class="ov"><div class="l1">PENCAPAIAN &amp; SASARAN</div><div class="l2">JUALAN SYARIKAT</div></div>
+
+  <div id="t1" class="ov bt"><div class="a">RM1.2</div><div class="b">JUTA</div></div>
+  <div id="t2" class="ov bt"><div class="a">RM1.8</div><div class="b">JUTA</div></div>
+  <div id="t3" class="ov bt gold"><div class="a">RM3</div><div class="b">JUTA</div></div>
+  <div id="p1" class="ov plate">2025</div>
+  <div id="p2" class="ov plate">2026</div>
+  <div id="p3" class="ov plate two">SASARAN<br>(3 TAHUN)</div>
+
+  <div id="badge" class="ov"><div class="s">PENINGKATAN</div><div class="p" id="pct">+50%</div></div>
+
+  <div id="sum" class="ov">
+    <div id="sumL">
+      <svg viewBox="0 0 108 108"><defs><linearGradient id="g1" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#b9852a"/><stop offset="1" stop-color="#ffe08a"/></linearGradient></defs>
+        <rect x="6" y="72" width="20" height="28" rx="3" fill="url(#g1)"/><rect x="34" y="56" width="20" height="44" rx="3" fill="url(#g1)"/><rect x="62" y="40" width="20" height="60" rx="3" fill="url(#g1)"/>
+        <path d="M8 56 L44 34 L66 44 L98 12" stroke="url(#g1)" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M80 10 L100 10 L100 30" stroke="url(#g1)" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <div class="col"><div class="k">JUALAN 2025:</div><div class="v">RM1.2 JUTA</div></div>
+      <div class="col"><div class="k">JUALAN 2026:</div><div class="v">RM1.8 JUTA</div></div>
+      <div class="col"><div class="k">PERTUMBUHAN:</div><div class="v">+50%</div></div>
+    </div>
+    <div id="sumR">
+      <svg viewBox="0 0 118 118"><circle cx="54" cy="64" r="46" fill="#c8161d"/><circle cx="54" cy="64" r="35" fill="#fff"/><circle cx="54" cy="64" r="25" fill="#c8161d"/><circle cx="54" cy="64" r="14" fill="#fff"/><circle cx="54" cy="64" r="6" fill="#c8161d"/>
+        <path d="M54 64 L100 18" stroke="#0b1f52" stroke-width="6" stroke-linecap="round"/><path d="M92 8 L108 8 L108 24 L100 18 Z" fill="#0b1f52"/><path d="M82 28 L96 28 M86 40 L96 28 M78 36 L84 30" stroke="#0b1f52" stroke-width="0"/></svg>
+      <div class="tx"><div class="a">SASARAN JUALAN</div><div class="b">RM3 JUTA</div><div class="c">DALAM TEMPOH 3 TAHUN</div></div>
+    </div>
+  </div>
+</div>
+<script type="importmap">
+{ "imports": { "three": "./node_modules/three/build/three.module.js", "three/addons/": "./node_modules/three/examples/jsm/" } }
+</script>
+<script type="module" src="./scene_light.js"></script>
+</body>
+</html>
