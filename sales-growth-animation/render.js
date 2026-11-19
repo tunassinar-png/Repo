@@ -32,7 +32,7 @@ async function open(dpr) {
   const page = await ctx.newPage();
   page.on('console', m => { if (m.type() === 'error') console.error('[page]', m.text()); });
   page.on('pageerror', e => console.error('[pageerror]', e.message));
-  await page.goto(`http://127.0.0.1:${server.address().port}/index.html`);
+  await page.goto(`http://127.0.0.1:${server.address().port}/${process.env.PAGE || 'index.html'}`);
   await page.waitForFunction('window.__ready === true', null, { timeout: 120000 });
   return { page, close: async () => { await browser.close(); server.close(); } };
 }
