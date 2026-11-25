@@ -141,7 +141,7 @@ crash = noise_hp(n, 1) * np.exp(-tt * 2.4) * np.minimum(1, tt * 300)
 place(fx, crash, HIT, 0.24, 0.0)
 boom = np.sin(2*np.pi*(34 + 70*np.exp(-tt*6)).cumsum()/SR) * np.exp(-tt * 3.2)
 place(fx, boom, HIT, 0.55, 0.0)
-place(fx, crash * 0.7, (8.0 if XL else 6.0) if LONG else 5.0, 0.12 if not LONG else 0.2, 0.0)
+place(fx, crash * 0.7, HIT + 1.6 if SHORT else ((8.0 if XL else 6.0) if LONG else 5.0), 0.12 if not LONG else 0.2, 0.0)
 
 # ---------------- lead / bell melody (target reveal) -------------------
 def bell(f, dur):
@@ -149,7 +149,7 @@ def bell(f, dur):
     sig = (np.sin(2*np.pi*f*tt) + .5*np.sin(2*np.pi*2.0*f*tt)*np.exp(-tt*4) + .3*np.sin(2*np.pi*3.01*f*tt)*np.exp(-tt*6) + .15*np.sin(2*np.pi*4.2*f*tt)*np.exp(-tt*9))
     return sig * np.exp(-tt * (2.2 if dur > 0.6 else 5)) * np.minimum(1, tt * 600)
 mel = [(4.0, 84, .5), (4.25, 81, .4), (4.5, 84, .4), (4.75, 89, .4), (5.0, 88, .45), (5.25, 91, .45), (5.5, 96, 0.5)]
-if SHORT: mel = [(3.0, 84, .4), (3.35, 88, .4), (3.7, 91, .4), (4.05, 96, 0.9)]
+if SHORT: mel = [(HIT, 84, .4), (HIT + .35, 88, .4), (HIT + .7, 91, .4), (HIT + 1.05, 96, 0.9)]
 elif XL: mel = [(5.0, 84, .5), (5.5, 81, .5), (6.0, 84, .5), (6.5, 89, .5), (7.0, 88, .5), (7.5, 91, .6), (8.0, 96, 1.2)]
 elif LONG: mel = [(4.0, 84, .5), (4.5, 81, .5), (5.0, 84, .5), (5.5, 89, .5), (6.0, 88, .5), (6.5, 91, .6), (7.0, 96, 0.9)]
 for (st, m, dd) in mel:
