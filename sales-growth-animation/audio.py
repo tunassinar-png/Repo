@@ -3,7 +3,7 @@
 import numpy as np, wave, sys
 
 import os
-SR = 48000; DUR = float(os.environ.get('DUR', 6.0)); LONG = DUR > 7; N = int(SR * DUR)
+SR = 48000; DUR = float(os.environ.get('DUR', 6.0)); LONG = DUR > 7; XL = DUR > 9; HIT = float(os.environ.get('HIT', 4.0)); N = int(SR * DUR)
 t = np.arange(N) / SR
 rng = np.random.default_rng(7)
 mtof = lambda m: 440.0 * 2 ** ((m - 69) / 12)
@@ -52,7 +52,9 @@ CH = [  # (start, end, chord midi notes, bass root)
     (4.0, 5.0, [41, 45, 48, 53, 57, 60], 29),  # F
     (5.0, 6.0, [48, 52, 55, 60, 64, 67], 36),  # C (resolve)
 ]
-if LONG:
+if XL:   # 10 s: I - V - vi - IV - I, one bar = 2 s
+    CH = [(0.0, 2.0, [48, 52, 55, 60, 64], 36), (2.0, 4.0, [43, 47, 50, 55, 59, 62], 31), (4.0, 6.0, [45, 48, 52, 57, 60, 64], 33), (6.0, 8.0, [41, 45, 48, 53, 57, 60], 29), (8.0, 10.0, [48, 52, 55, 60, 64, 67], 36)]
+elif LONG:
     CH = CH[:2] + [(4.0, 6.0, [41, 45, 48, 53, 57, 60], 29), (6.0, 8.0, [48, 52, 55, 60, 64, 67], 36)]
 for (a, b, notes, root) in CH:
     n = int((b - a) * SR) + int(0.25 * SR)
@@ -122,21 +124,21 @@ for beat in np.arange(0, DUR, 0.5):
 for beat in np.arange(2.0, DUR, 0.25):            # 8ths hats
     off = (int(round(beat / 0.25)) % 2) == 1
     place(drum, hat(0.55 if off else 0.35), beat, 0.14, pan=0.35)
-for beat in ((3.5, 4.5, 5.5, 6.5, 7.5) if LONG else (3.0, 3.5, 4.5, 5.0, 5.5)):             # backbeat claps
+for beat in (list(np.arange(HIT - 1.5, DUR, 1.0)) if XL else ((3.5, 4.5, 5.5, 6.5, 7.5) if LONG else (3.0, 3.5, 4.5, 5.0, 5.5))):             # backbeat claps
     place(drum, clap(0.8), beat, 0.26)
-for tt0 in np.arange(3.5, 4.0, 0.125):             # snare-roll style build into the zoom-out
-    place(drum, clap(0.4 + (tt0 - 3.5) * 1.2), tt0, 0.13)
+for tt0 in np.arange(HIT - 0.5, HIT, 0.125):       # snare-roll style build into the big moment
+    place(drum, clap(0.4 + (tt0 - (HIT - 0.5)) * 1.2), tt0, 0.13)
 
 # ---------------- FX: riser, impact, crash ------------------------------
 n = int(1.0 * SR); tt = np.arange(n) / SR
 riser = noise_hp(n, 1) * (tt / 1.0) ** 2.2
-place(fx, riser, 3.0, 0.20, 0.0)
+place(fx, riser, HIT - 1.0, 0.20, 0.0)
 n = int(2.2 * SR); tt = np.arange(n) / SR
 crash = noise_hp(n, 1) * np.exp(-tt * 2.4) * np.minimum(1, tt * 300)
-place(fx, crash, 4.0, 0.24, 0.0)
+place(fx, crash, HIT, 0.24, 0.0)
 boom = np.sin(2*np.pi*(34 + 70*np.exp(-tt*6)).cumsum()/SR) * np.exp(-tt * 3.2)
-place(fx, boom, 4.0, 0.55, 0.0)
-place(fx, crash * 0.7, 6.0 if LONG else 5.0, 0.12 if not LONG else 0.2, 0.0)
+place(fx, boom, HIT, 0.55, 0.0)
+place(fx, crash * 0.7, (8.0 if XL else 6.0) if LONG else 5.0, 0.12 if not LONG else 0.2, 0.0)
 
 # ---------------- lead / bell melody (target reveal) -------------------
 def bell(f, dur):
@@ -144,9 +146,10 @@ def bell(f, dur):
     sig = (np.sin(2*np.pi*f*tt) + .5*np.sin(2*np.pi*2.0*f*tt)*np.exp(-tt*4) + .3*np.sin(2*np.pi*3.01*f*tt)*np.exp(-tt*6) + .15*np.sin(2*np.pi*4.2*f*tt)*np.exp(-tt*9))
     return sig * np.exp(-tt * (2.2 if dur > 0.6 else 5)) * np.minimum(1, tt * 600)
 mel = [(4.0, 84, .5), (4.25, 81, .4), (4.5, 84, .4), (4.75, 89, .4), (5.0, 88, .45), (5.25, 91, .45), (5.5, 96, 0.5)]
-if LONG: mel = [(4.0, 84, .5), (4.5, 81, .5), (5.0, 84, .5), (5.5, 89, .5), (6.0, 88, .5), (6.5, 91, .6), (7.0, 96, 0.9)]
+if XL: mel = [(5.0, 84, .5), (5.5, 81, .5), (6.0, 84, .5), (6.5, 89, .5), (7.0, 88, .5), (7.5, 91, .6), (8.0, 96, 1.2)]
+elif LONG: mel = [(4.0, 84, .5), (4.5, 81, .5), (5.0, 84, .5), (5.5, 89, .5), (6.0, 88, .5), (6.5, 91, .6), (7.0, 96, 0.9)]
 for (st, m, dd) in mel:
-    place(lead, bell(mtof(m), dd + .6), st, 0.19 if st < (7.0 if LONG else 5.5) else 0.22, pan=0.15 if m % 2 else -0.15)
+    place(lead, bell(mtof(m), dd + .6), st, 0.19 if st < ((8.0 if XL else 7.0) if LONG else 5.5) else 0.22, pan=0.15 if m % 2 else -0.15)
 # soft chime motif in the first scenes
 for (st, m) in ((0.5, 76), (1.0, 79), (2.5, 83), (3.0, 79)):
     place(lead, bell(mtof(m), 0.8), st, 0.09, pan=-0.3)
