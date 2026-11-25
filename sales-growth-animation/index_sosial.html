@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="ms"><head><meta charset="utf-8"><title>KAMAAR Beddings: Website, Facebook, TikTok</title>
+<style>
+  html, body { margin: 0; background: #030a1c; overflow: hidden; }
+  #stage { position: relative; width: 1920px; height: 1080px; overflow: hidden; font-family: 'Inter', 'Helvetica Neue', Arial, 'DejaVu Sans', sans-serif; color: #fff; }
+  #cv { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; display: block; }
+  #vignette { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse 80% 75% at 50% 50%, rgba(0,0,0,0) 62%, rgba(2,6,18,.5) 100%); }
+  .ov { position: absolute; left: 0; top: 0; opacity: 0; white-space: nowrap; will-change: transform, opacity; }
+  #logo { left: 64px; top: 20px; } #logo img { display: block; width: 440px; height: auto; filter: drop-shadow(0 4px 16px rgba(0,10,60,.55)); }
+  #divider { left: 580px; top: 36px; width: 3px; height: 120px; background: linear-gradient(180deg, rgba(245,200,90,0), #f3c75a, rgba(245,200,90,0)); }
+  #title { left: 636px; top: 40px; }
+  #title .l1 { font-weight: 800; font-size: 66px; line-height: 1.05; letter-spacing: .005em; text-shadow: 0 6px 24px rgba(0,10,60,.6); }
+  #title .bar { margin-top: 10px; width: 520px; height: 6px; border-radius: 3px; background: linear-gradient(90deg, #f7d56e, #e2a93a, rgba(226,169,58,0)); }
+  /* phones */
+  .phone { position: absolute; left: 0; top: 0; width: 322px; height: 700px; padding: 9px; border-radius: 54px; opacity: 0; will-change: transform;
+           background: linear-gradient(145deg, #3a404c, #0b0e15 55%, #272c36); }
+  .screen { position: relative; width: 322px; height: 700px; border-radius: 45px; overflow: hidden; background: #000; }
+  .screen img { width: 100%; height: 100%; display: block; object-fit: cover; }
+  .brand { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; flex-direction: column;
+           background: radial-gradient(ellipse at 50% 38%, #1d4f9f 0%, #0b2763 55%, #061640 100%); }
+  .brand img { width: 250px; height: auto; filter: drop-shadow(0 4px 16px rgba(0,10,60,.6)); }
+  .brand:after { content: ''; position: absolute; left: 50%; top: 14px; width: 96px; height: 28px; border-radius: 14px; background: #000; transform: translateX(-50%); }
+  /* chips */
+  .chip { position: absolute; left: 0; top: 0; opacity: 0; display: flex; align-items: center; gap: 14px; padding: 12px 34px 12px 16px; border-radius: 999px;
+          font-weight: 800; font-size: 46px; line-height: 1; white-space: nowrap; will-change: transform; box-shadow: 0 16px 38px rgba(0,0,0,.45); }
+  .chip .ic { width: 58px; height: 58px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex: none; }
+  .chip.web { background: linear-gradient(180deg, #ffe58a, #e2a93a); color: #0b1f52; box-shadow: 0 16px 38px rgba(0,0,0,.45), 0 0 34px rgba(255,200,80,.45); }
+  .chip.web .ic { background: #0b1f52; }
+  .chip.fb { background: linear-gradient(180deg, #2f8cff, #0f5fd1); box-shadow: 0 16px 38px rgba(0,0,0,.45), 0 0 34px rgba(40,120,255,.5); }
+  .chip.fb .ic { background: #fff; color: #1877f2; font-size: 50px; font-weight: 800; font-family: Arial, 'Helvetica Neue', sans-serif; padding-top: 6px; box-sizing: border-box; }
+  .chip.tt { background: #08080d; border: 2px solid rgba(255,255,255,.22); text-shadow: -2px 0 #25f4ee, 2px 0 #fe2c55; box-shadow: 0 16px 38px rgba(0,0,0,.5), 0 0 34px rgba(254,44,85,.35); }
+  .chip.tt .ic { background: #111; font-size: 40px; text-shadow: -2px 0 #25f4ee, 2px 0 #fe2c55; }
+  .ring { position: absolute; left: 0; top: 0; width: 330px; height: 92px; border-radius: 999px; border: 4px solid rgba(255,214,120,.9); opacity: 0; pointer-events: none; }
+</style></head><body>
+<div id="stage">
+  <canvas id="cv"></canvas><div id="vignette"></div>
+  <div id="logo" class="ov"><img src="kamaar-logo-white.png" alt="KAMAAR Beddings"></div>
+  <div id="divider" class="ov"></div>
+  <div id="title" class="ov"><div class="l1">BOLEH DIAKSES MENERUSI</div><div class="bar"></div></div>
+
+  <div id="ph_web" class="phone"><div class="screen"><img id="img_web" alt=""></div></div>
+  <div id="ph_fb" class="phone"><div class="screen"><img id="img_fb" alt=""></div></div>
+  <div id="ph_tt" class="phone"><div class="screen"><div class="brand"><img src="kamaar-logo-white.png" alt=""></div><img id="img_tt" alt="" style="display:none"></div></div>
+
+  <div id="ring_web" class="ring"></div><div id="ring_fb" class="ring"></div><div id="ring_tt" class="ring"></div>
+  <div id="chip_web" class="chip web"><span class="ic"><svg width="38" height="38" viewBox="0 0 38 38" fill="none" stroke="#ffe58a" stroke-width="2.6" stroke-linecap="round"><circle cx="19" cy="19" r="15"/><ellipse cx="19" cy="19" rx="6.5" ry="15"/><path d="M4 19h30M7 11h24M7 27h24"/></svg></span>Website</div>
+  <div id="chip_fb" class="chip fb"><span class="ic">f</span>Facebook</div>
+  <div id="chip_tt" class="chip tt"><span class="ic">&#9834;</span>TikTok</div>
+</div>
+<script src="./sosial.js"></script></body></html>

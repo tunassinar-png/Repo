@@ -159,6 +159,13 @@ for (st, m, dd) in mel:
 for (st, m) in ((0.5, 76), (1.0, 79), (2.5, 83), (3.0, 79)):
     place(lead, bell(mtof(m), 0.8), st, 0.09, pan=-0.3)
 
+# ---------------- pop-up blips (sync with on-screen labels), POPS="1.0,2.0,3.0" ----------
+for k_, tp in enumerate([float(v) for v in os.environ.get('POPS', '').split(',') if v.strip()]):
+    n = int(0.28 * SR); tt = np.arange(n) / SR
+    f = 520 * (1.25 ** k_) * (1 + 1.1 * np.exp(-tt * 38))           # quick upward chirp
+    blip = np.sin(2 * np.pi * np.cumsum(f) / SR) * np.exp(-tt * 14) * np.minimum(1, tt * 900)
+    place(lead, blip, tp, 0.30, pan=(-0.4, 0.0, 0.4)[k_ % 3])
+    place(lead, bell(mtof(88 + 2 * k_), 0.5), tp + 0.02, 0.10, pan=(-0.4, 0.0, 0.4)[k_ % 3])
 # ---------------- sidechain-ish pump on pads/bass from the kick ---------
 duck = np.ones(N)
 for beat in np.arange(1.0, DUR, 0.5):

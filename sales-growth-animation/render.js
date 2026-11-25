@@ -11,7 +11,7 @@ const path = require('path');
 const http = require('http');
 
 const ROOT = __dirname;
-const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.mjs': 'text/javascript', '.json': 'application/json', '.css': 'text/css' };
+const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.mjs': 'text/javascript', '.json': 'application/json', '.css': 'text/css', '.jpg': 'image/jpeg', '.png': 'image/png' };
 function serve() {
   return new Promise(res => {
     const s = http.createServer((q, r) => {
