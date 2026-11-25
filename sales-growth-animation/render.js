@@ -28,7 +28,7 @@ async function open(dpr) {
   const browser = await chromium.launch({
     args: ['--use-angle=swiftshader', '--use-gl=angle', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--enable-webgl', '--no-sandbox'],
   });
-  const ctx = await browser.newContext({ viewport: { width: 1920, height: 1080 }, deviceScaleFactor: dpr });
+  const ctx = await browser.newContext({ viewport: { width: +(process.env.VW || 1920), height: +(process.env.VH || 1080) }, deviceScaleFactor: dpr });
   const page = await ctx.newPage();
   page.on('console', m => { if (m.type() === 'error') console.error('[page]', m.text()); });
   page.on('pageerror', e => console.error('[pageerror]', e.message));
@@ -59,7 +59,7 @@ async function open(dpr) {
     if (audio) args.push('-i', audio);
     args.push('-c:v', 'libx264', '-preset', 'slow', '-crf', '16', '-pix_fmt', 'yuv420p',
       '-colorspace', 'bt709', '-color_primaries', 'bt709', '-color_trc', 'bt709', '-color_range', 'tv',
-      '-vf', 'scale=3840:2160:flags=lanczos,format=yuv420p', '-r', String(fps));
+      '-vf', `scale=${process.env.OUT_SIZE || '3840:2160'}:flags=lanczos,format=yuv420p`, '-r', String(fps));
     if (audio) args.push('-c:a', 'aac', '-b:a', '256k', '-shortest');
     args.push('-movflags', '+faststart', out);
     const ff = spawn('ffmpeg', args, { stdio: ['pipe', 'inherit', 'inherit'] });
