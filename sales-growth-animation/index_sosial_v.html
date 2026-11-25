@@ -6,29 +6,29 @@
   #cv { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; display: block; }
   #vignette { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse 80% 75% at 50% 50%, rgba(0,0,0,0) 62%, rgba(2,6,18,.5) 100%); }
   .ov { position: absolute; left: 0; top: 0; opacity: 0; white-space: nowrap; will-change: transform, opacity; }
-  #logo { left: 0; top: 118px; width: 1080px; text-align: center; } #logo img { display: inline-block; width: 560px; height: auto; filter: drop-shadow(0 4px 16px rgba(0,10,60,.55)); }
-  #title { left: 0; top: 272px; width: 1080px; text-align: center; }
+  #logo { left: 0; top: 170px; width: 1080px; text-align: center; } #logo img { display: inline-block; width: 560px; height: auto; filter: drop-shadow(0 4px 16px rgba(0,10,60,.55)); }
+  #title { left: 0; top: 326px; width: 1080px; text-align: center; }
   #title .l1 { font-weight: 800; font-size: 60px; line-height: 1.05; letter-spacing: .005em; text-shadow: 0 6px 24px rgba(0,10,60,.6); }
   #title .bar { margin: 16px auto 0; width: 560px; height: 6px; border-radius: 3px; background: linear-gradient(90deg, rgba(226,169,58,0), #f7d56e, #e2a93a, #f7d56e, rgba(226,169,58,0)); }
   /* phones */
-  .phone { position: absolute; left: 0; top: 0; width: 400px; height: 870px; padding: 9px; border-radius: 60px; opacity: 0; will-change: transform;
+  .phone { position: absolute; left: 0; top: 0; width: 332px; height: 722px; padding: 9px; border-radius: 50px; opacity: 0; will-change: transform;
            background: linear-gradient(145deg, #3a404c, #0b0e15 55%, #272c36); }
-  .screen { position: relative; width: 400px; height: 870px; border-radius: 51px; overflow: hidden; background: #000; }
+  .screen { position: relative; width: 332px; height: 722px; border-radius: 42px; overflow: hidden; background: #000; }
   .screen img { width: 100%; height: 100%; display: block; object-fit: cover; }
   .brand { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; flex-direction: column;
            background: radial-gradient(ellipse at 50% 38%, #1d4f9f 0%, #0b2763 55%, #061640 100%); }
   .brand img { width: 250px; height: auto; filter: drop-shadow(0 4px 16px rgba(0,10,60,.6)); }
   .brand:after { content: ''; position: absolute; left: 50%; top: 14px; width: 96px; height: 28px; border-radius: 14px; background: #000; transform: translateX(-50%); }
   /* chips */
-  .chip { position: absolute; left: 0; top: 0; opacity: 0; display: flex; align-items: center; gap: 14px; padding: 12px 34px 12px 16px; border-radius: 999px;
-          font-weight: 800; font-size: 50px; line-height: 1; white-space: nowrap; will-change: transform; box-shadow: 0 16px 38px rgba(0,0,0,.45); }
-  .chip .ic { width: 58px; height: 58px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex: none; }
+  .chip { position: absolute; left: 0; top: 0; opacity: 0; display: flex; align-items: center; gap: 10px; padding: 10px 26px 10px 12px; border-radius: 999px;
+          font-weight: 800; font-size: 38px; line-height: 1; white-space: nowrap; will-change: transform; box-shadow: 0 16px 38px rgba(0,0,0,.45); }
+  .chip .ic { width: 46px; height: 46px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex: none; }
   .chip.web { background: linear-gradient(180deg, #ffe58a, #e2a93a); color: #0b1f52; box-shadow: 0 16px 38px rgba(0,0,0,.45), 0 0 34px rgba(255,200,80,.45); }
   .chip.web .ic { background: #0b1f52; }
   .chip.fb { background: linear-gradient(180deg, #2f8cff, #0f5fd1); box-shadow: 0 16px 38px rgba(0,0,0,.45), 0 0 34px rgba(40,120,255,.5); }
-  .chip.fb .ic { background: #fff; color: #1877f2; font-size: 50px; font-weight: 800; font-family: Arial, 'Helvetica Neue', sans-serif; padding-top: 6px; box-sizing: border-box; }
+  .chip.fb .ic { background: #fff; color: #1877f2; font-size: 40px; font-weight: 800; font-family: Arial, 'Helvetica Neue', sans-serif; padding-top: 6px; box-sizing: border-box; }
   .chip.tt { background: #08080d; border: 2px solid rgba(255,255,255,.22); text-shadow: -2px 0 #25f4ee, 2px 0 #fe2c55; box-shadow: 0 16px 38px rgba(0,0,0,.5), 0 0 34px rgba(254,44,85,.35); }
-  .chip.tt .ic { background: #111; font-size: 40px; text-shadow: -2px 0 #25f4ee, 2px 0 #fe2c55; }
+  .chip.tt .ic { background: #111; font-size: 32px; text-shadow: -2px 0 #25f4ee, 2px 0 #fe2c55; }
   .ring { position: absolute; left: 0; top: 0; width: 330px; height: 92px; border-radius: 999px; border: 4px solid rgba(255,214,120,.9); opacity: 0; pointer-events: none; }
 </style></head><body>
 <div id="stage">
@@ -38,7 +38,7 @@
 
   <div id="ph_web" class="phone"><div class="screen"><img id="img_web" alt=""></div></div>
   <div id="ph_fb" class="phone"><div class="screen"><img id="img_fb" alt=""></div></div>
-  <div id="ph_tt" class="phone" style="display:none"><div class="screen"><img id="img_tt" alt="" style="display:none"></div></div>
+  <div id="ph_tt" class="phone"><div class="screen"><img id="img_tt" alt=""></div></div>
 
   <div id="ring_web" class="ring"></div><div id="ring_fb" class="ring"></div><div id="ring_tt" class="ring"></div>
   <div id="chip_web" class="chip web"><span class="ic"><svg width="38" height="38" viewBox="0 0 38 38" fill="none" stroke="#ffe58a" stroke-width="2.6" stroke-linecap="round"><circle cx="19" cy="19" r="15"/><ellipse cx="19" cy="19" rx="6.5" ry="15"/><path d="M4 19h30M7 11h24M7 27h24"/></svg></span>Website</div>

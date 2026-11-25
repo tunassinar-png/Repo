@@ -59,9 +59,9 @@ function drawBG(t) {
 const NFR = 142, T0 = 0.45;                    // footage starts playing at 0.45 s
 const stage = document.getElementById('stage');
 const PH = [
-  { id: 'web', x: 309,  y: 468, tilt: 5,  pop: 1.0, src: 'assets/web_v/f_' },
-  { id: 'fb',  x: 771,  y: 468, tilt: -5, pop: 2.0, src: 'assets/fb_v/f_' },
-  { id: 'tt',  x: 540,  y: 1478, tilt: 0, pop: 3.0, src: null, noPhone: true },
+  { id: 'web', x: 195, y: 660, tilt: 6,  pop: 1.0, src: 'assets/web_v/f_' },
+  { id: 'fb',  x: 540, y: 660, tilt: 0,  pop: 2.0, src: 'assets/fb_v/f_' },
+  { id: 'tt',  x: 885, y: 660, tilt: -6, pop: 3.0, src: 'assets/tt_v/f_' },
 ];
 const el = {}; PH.forEach(p => { el[p.id] = { phone: document.getElementById('ph_' + p.id), chip: document.getElementById('chip_' + p.id), ring: document.getElementById('ring_' + p.id), img: document.getElementById('img_' + p.id) }; });
 const last = {};
@@ -90,9 +90,9 @@ window.renderAt = async (t) => {
     // phone entrance (staggered)
     const q = E.outCubic(prog(t, 0.2 + i * 0.12, 0.9 + i * 0.12));
     const glow = Math.max(0, 1 - (t - p.pop) / 0.9) * (t >= p.pop ? 1 : 0);
-    if (!p.noPhone) {
+    {
       e.phone.style.opacity = q.toFixed(3);
-      e.phone.style.transform = `translate(${p.x - 209}px, ${540 + (1 - q) * 110}px) perspective(1800px) rotateY(${p.tilt}deg) scale(${0.94 + 0.06 * q})`;
+      e.phone.style.transform = `translate(${p.x - 175}px, ${740 + (1 - q) * 110}px) perspective(1800px) rotateY(${p.tilt}deg) scale(${0.94 + 0.06 * q})`;
       e.phone.style.boxShadow = `0 40px 80px rgba(0,0,0,.55), 0 0 0 2px rgba(255,255,255,.08), 0 0 ${30 + 60 * glow}px rgba(255,200,90,${0.15 + 0.55 * glow})`;
     }
     // chip pop-up

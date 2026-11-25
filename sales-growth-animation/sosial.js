@@ -61,7 +61,7 @@ const stage = document.getElementById('stage');
 const PH = [
   { id: 'web', x: 480,  tilt: 7,  chip: 'web', pop: 1.0, src: 'assets/web/f_' },
   { id: 'fb',  x: 960,  tilt: 0,  chip: 'fb',  pop: 2.0, src: 'assets/fb/f_' },
-  { id: 'tt',  x: 1440, tilt: -7, chip: 'tt',  pop: 3.0, src: null },
+  { id: 'tt',  x: 1440, tilt: -7, chip: 'tt',  pop: 3.0, src: 'assets/tt/f_' },
 ];
 const el = {}; PH.forEach(p => { el[p.id] = { phone: document.getElementById('ph_' + p.id), chip: document.getElementById('chip_' + p.id), ring: document.getElementById('ring_' + p.id), img: document.getElementById('img_' + p.id) }; });
 const last = {};
