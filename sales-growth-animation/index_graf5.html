@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<title>Graf Sasaran Jualan RM3 Juta</title>
+<style>
+  html, body { margin: 0; background: #030a1c; overflow: hidden; }
+  #stage { position: relative; width: 1920px; height: 1080px; overflow: hidden; font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif; color: #fff; }
+  #cv { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; display: block; }
+  #vignette { position: absolute; inset: 0; pointer-events: none;
+    background: radial-gradient(ellipse 80% 75% at 50% 50%, rgba(0,0,0,0) 62%, rgba(2,6,18,.5) 100%); }
+  .ov { position: absolute; left: 0; top: 0; opacity: 0; white-space: nowrap; will-change: transform, opacity; }
+  #logo { left: 64px; top: 20px; }
+  #logo img { display: block; width: 500px; height: auto; filter: drop-shadow(0 4px 16px rgba(0,10,60,.55)); }
+  #divider { left: 630px; top: 36px; width: 3px; height: 130px; background: linear-gradient(180deg, rgba(245,200,90,0), #f3c75a, rgba(245,200,90,0)); }
+  #title { left: 690px; top: 14px; }
+  #title .l1 { font-weight: 800; font-size: 76px; line-height: 1.05; letter-spacing: .005em; text-shadow: 0 6px 24px rgba(0,10,60,.6); }
+  #title .l2 { display: inline-block; margin-top: 2px; padding: 2px 70px 2px 34px; font-weight: 800; font-size: 76px; line-height: 1.05; color: #0b1f52;
+               background: linear-gradient(90deg, #b9852a 0%, #f7d56e 18%, #ffe9a0 50%, #f2c04a 82%, rgba(226,169,58,0) 100%);
+               clip-path: polygon(0 0, 100% 0, 96% 100%, 0 100%); margin-left: -30px; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <canvas id="cv"></canvas>
+  <div id="vignette"></div>
+  <div id="logo" class="ov"><img src="kamaar-logo-white.png" alt="KAMAAR Beddings"></div>
+  <div id="divider" class="ov"></div>
+  <div id="title" class="ov"><div class="l1">GRAF KENAIKAN</div><div class="l2">JUALAN SYARIKAT</div></div>
+</div>
+<script src="./graf5.js"></script>
+</body>
+</html>
