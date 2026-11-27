@@ -1,0 +1,17 @@
+{
+  "name": "rezeki-takwa-explainer",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Animated infographic short (9:16) about rezeki and takwa — Remotion",
+  "scripts": {
+    "vo": "python3 tools/make_vo.py",
+    "render": "remotion render src/index.ts Rezeki out/rezeki-dan-takwa.mp4 --codec=h264 --crf=18"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.540",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "remotion": "4.0.540",
+    "@fontsource/amiri-quran": "5.1.0"
+  }
+}

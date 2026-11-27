@@ -1,0 +1,57 @@
+{
+  "voice": "ms-MY-OsmanNeural",
+  "rate": "+2%",
+  "pitch": "+0Hz",
+  "volume": "+12%",
+  "first_line_at": 0.8,
+  "line_gap": 0.4,
+  "scene_gap": 0.5,
+  "lead": 0.55,
+  "tail": 2.4,
+  "scenes": [
+    {"id": "hook", "label": "REZEKI", "lines": [
+      "Pernah tak… kita terlalu sibuk mencari rezeki,",
+      "sampai kadang-kadang kita terlupa…",
+      "siapa sebenarnya yang memberi?"
+    ]},
+    {"id": "struggle", "label": "KEPENATAN", "lines": [
+      "Bayangkan seorang ayah.",
+      "Setiap hari dia keluar bekerja, dari pagi hingga ke petang.",
+      "Tapi duit tetap tak cukup."
+    ]},
+    {"id": "night", "label": "SATU MALAM", "lines": [
+      "Satu malam, dia memandang anak-anaknya yang sedang tidur.",
+      "Dalam hati dia berbisik…",
+      "Bagaimana aku nak teruskan hidup esok?"
+    ]},
+    {"id": "prayer", "label": "KESEMPITAN", "lines": [
+      "Namun, dalam kesempitan itu…",
+      "dia tetap menjaga solatnya.",
+      "Kerana dia yakin dengan janji Allah."
+    ]},
+    {"id": "verse", "label": "SURAH AT-TALAQ", "lines": [
+      "Dalam Surah At-Talaq, ayat dua dan tiga, Allah berfirman:",
+      "Dan sesiapa yang bertakwa kepada Allah, nescaya Dia akan mengadakan baginya jalan keluar.",
+      "Dan Dia memberinya rezeki dari arah yang tidak disangka-sangka."
+    ]},
+    {"id": "myth", "label": "MITOS & HAKIKAT", "lines": [
+      "Takwa bukan bermakna hidup kita takkan diuji.",
+      "Tetapi walaupun hidup terasa sempit…",
+      "kita tetap memilih untuk bertakwa."
+    ]},
+    {"id": "balance", "label": "TIMBANGAN", "lines": [
+      "Jangan sampai kerana terlalu mengejar duit…",
+      "kita lepaskan takwa.",
+      "Kerana rezeki yang kita kejar itu… sebenarnya datang daripada Allah."
+    ]},
+    {"id": "formula", "label": "FORMULA", "lines": [
+      "Carilah rezeki dengan usaha,",
+      "dan jemputlah keberkatannya dengan takwa."
+    ]},
+    {"id": "end", "label": "PENUTUP", "lines": [
+      "Kalau perkongsian ini bermanfaat, kongsikanlah.",
+      "Mana tahu, ia jadi asbab kebaikan untuk orang lain.",
+      "Insya-Allah, kita jumpa lagi."
+    ]}
+  ]
+}

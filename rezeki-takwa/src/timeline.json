@@ -1,0 +1,1055 @@
+{
+ "fps": 30,
+ "total": 3081,
+ "scenes": [
+  {
+   "id": "hook",
+   "label": "REZEKI",
+   "lines": [
+    {
+     "text": "Pernah tak… kita terlalu sibuk mencari rezeki,",
+     "start": 24,
+     "end": 131,
+     "words": [
+      {
+       "w": "Pernah",
+       "s": 27,
+       "e": 38
+      },
+      {
+       "w": "tak",
+       "s": 38,
+       "e": 43
+      },
+      {
+       "w": "kita",
+       "s": 44,
+       "e": 50
+      },
+      {
+       "w": "terlalu",
+       "s": 51,
+       "e": 62
+      },
+      {
+       "w": "sibuk",
+       "s": 63,
+       "e": 74
+      },
+      {
+       "w": "mencari",
+       "s": 74,
+       "e": 87
+      },
+      {
+       "w": "rezeki",
+       "s": 88,
+       "e": 102
+      }
+     ]
+    },
+    {
+     "text": "sampai kadang-kadang kita terlupa…",
+     "start": 143,
+     "end": 225,
+     "words": [
+      {
+       "w": "sampai",
+       "s": 146,
+       "e": 158
+      },
+      {
+       "w": "kadang-kadang",
+       "s": 159,
+       "e": 174
+      },
+      {
+       "w": "kita",
+       "s": 175,
+       "e": 182
+      },
+      {
+       "w": "terlupa",
+       "s": 182,
+       "e": 196
+      }
+     ]
+    },
+    {
+     "text": "siapa sebenarnya yang memberi?",
+     "start": 237,
+     "end": 315,
+     "words": [
+      {
+       "w": "siapa",
+       "s": 240,
+       "e": 251
+      },
+      {
+       "w": "sebenarnya",
+       "s": 251,
+       "e": 269
+      },
+      {
+       "w": "yang",
+       "s": 269,
+       "e": 273
+      },
+      {
+       "w": "memberi",
+       "s": 274,
+       "e": 286
+      }
+     ]
+    }
+   ],
+   "from": 0,
+   "dur": 314
+  },
+  {
+   "id": "struggle",
+   "label": "KEPENATAN",
+   "lines": [
+    {
+     "text": "Bayangkan seorang ayah.",
+     "start": 330,
+     "end": 401,
+     "words": [
+      {
+       "w": "Bayangkan",
+       "s": 333,
+       "e": 350
+      },
+      {
+       "w": "seorang",
+       "s": 350,
+       "e": 360
+      },
+      {
+       "w": "ayah",
+       "s": 360,
+       "e": 374
+      }
+     ]
+    },
+    {
+     "text": "Setiap hari dia keluar bekerja, dari pagi hingga ke petang.",
+     "start": 413,
+     "end": 544,
+     "words": [
+      {
+       "w": "Setiap",
+       "s": 416,
+       "e": 427
+      },
+      {
+       "w": "hari",
+       "s": 427,
+       "e": 436
+      },
+      {
+       "w": "dia",
+       "s": 436,
+       "e": 441
+      },
+      {
+       "w": "keluar",
+       "s": 442,
+       "e": 451
+      },
+      {
+       "w": "bekerja",
+       "s": 452,
+       "e": 467
+      },
+      {
+       "w": "dari",
+       "s": 475,
+       "e": 481
+      },
+      {
+       "w": "pagi",
+       "s": 482,
+       "e": 491
+      },
+      {
+       "w": "hingga",
+       "s": 492,
+       "e": 500
+      },
+      {
+       "w": "ke",
+       "s": 501,
+       "e": 504
+      },
+      {
+       "w": "petang",
+       "s": 504,
+       "e": 516
+      }
+     ]
+    },
+    {
+     "text": "Tapi duit tetap tak cukup.",
+     "start": 556,
+     "end": 630,
+     "words": [
+      {
+       "w": "Tapi",
+       "s": 559,
+       "e": 567
+      },
+      {
+       "w": "duit",
+       "s": 569,
+       "e": 576
+      },
+      {
+       "w": "tetap",
+       "s": 576,
+       "e": 586
+      },
+      {
+       "w": "tak",
+       "s": 586,
+       "e": 590
+      },
+      {
+       "w": "cukup",
+       "s": 591,
+       "e": 604
+      }
+     ]
+    }
+   ],
+   "from": 314,
+   "dur": 315
+  },
+  {
+   "id": "night",
+   "label": "SATU MALAM",
+   "lines": [
+    {
+     "text": "Satu malam, dia memandang anak-anaknya yang sedang tidur.",
+     "start": 645,
+     "end": 774,
+     "words": [
+      {
+       "w": "Satu",
+       "s": 648,
+       "e": 657
+      },
+      {
+       "w": "malam",
+       "s": 658,
+       "e": 671
+      },
+      {
+       "w": "dia",
+       "s": 676,
+       "e": 683
+      },
+      {
+       "w": "memandang",
+       "s": 683,
+       "e": 696
+      },
+      {
+       "w": "anak-anaknya",
+       "s": 697,
+       "e": 717
+      },
+      {
+       "w": "yang",
+       "s": 718,
+       "e": 724
+      },
+      {
+       "w": "sedang",
+       "s": 724,
+       "e": 733
+      },
+      {
+       "w": "tidur",
+       "s": 734,
+       "e": 746
+      }
+     ]
+    },
+    {
+     "text": "Dalam hati dia berbisik…",
+     "start": 786,
+     "end": 857,
+     "words": [
+      {
+       "w": "Dalam",
+       "s": 789,
+       "e": 797
+      },
+      {
+       "w": "hati",
+       "s": 797,
+       "e": 806
+      },
+      {
+       "w": "dia",
+       "s": 807,
+       "e": 813
+      },
+      {
+       "w": "berbisik",
+       "s": 813,
+       "e": 830
+      }
+     ]
+    },
+    {
+     "text": "Bagaimana aku nak teruskan hidup esok?",
+     "start": 869,
+     "end": 966,
+     "words": [
+      {
+       "w": "Bagaimana",
+       "s": 872,
+       "e": 887
+      },
+      {
+       "w": "aku",
+       "s": 887,
+       "e": 895
+      },
+      {
+       "w": "nak",
+       "s": 896,
+       "e": 900
+      },
+      {
+       "w": "teruskan",
+       "s": 900,
+       "e": 913
+      },
+      {
+       "w": "hidup",
+       "s": 913,
+       "e": 923
+      },
+      {
+       "w": "esok",
+       "s": 923,
+       "e": 938
+      }
+     ]
+    }
+   ],
+   "from": 629,
+   "dur": 336
+  },
+  {
+   "id": "prayer",
+   "label": "KESEMPITAN",
+   "lines": [
+    {
+     "text": "Namun, dalam kesempitan itu…",
+     "start": 981,
+     "end": 1068,
+     "words": [
+      {
+       "w": "Namun",
+       "s": 983,
+       "e": 999
+      },
+      {
+       "w": "dalam",
+       "s": 1003,
+       "e": 1012
+      },
+      {
+       "w": "kesempitan",
+       "s": 1013,
+       "e": 1028
+      },
+      {
+       "w": "itu",
+       "s": 1028,
+       "e": 1040
+      }
+     ]
+    },
+    {
+     "text": "dia tetap menjaga solatnya.",
+     "start": 1080,
+     "end": 1158,
+     "words": [
+      {
+       "w": "dia",
+       "s": 1083,
+       "e": 1090
+      },
+      {
+       "w": "tetap",
+       "s": 1091,
+       "e": 1100
+      },
+      {
+       "w": "menjaga",
+       "s": 1100,
+       "e": 1113
+      },
+      {
+       "w": "solatnya",
+       "s": 1114,
+       "e": 1129
+      }
+     ]
+    },
+    {
+     "text": "Kerana dia yakin dengan janji Allah.",
+     "start": 1170,
+     "end": 1261,
+     "words": [
+      {
+       "w": "Kerana",
+       "s": 1173,
+       "e": 1182
+      },
+      {
+       "w": "dia",
+       "s": 1183,
+       "e": 1189
+      },
+      {
+       "w": "yakin",
+       "s": 1189,
+       "e": 1200
+      },
+      {
+       "w": "dengan",
+       "s": 1200,
+       "e": 1207
+      },
+      {
+       "w": "janji",
+       "s": 1208,
+       "e": 1219
+      },
+      {
+       "w": "Allah",
+       "s": 1219,
+       "e": 1233
+      }
+     ]
+    }
+   ],
+   "from": 965,
+   "dur": 295
+  },
+  {
+   "id": "verse",
+   "label": "SURAH AT-TALAQ",
+   "lines": [
+    {
+     "text": "Dalam Surah At-Talaq, ayat dua dan tiga, Allah berfirman:",
+     "start": 1276,
+     "end": 1423,
+     "words": [
+      {
+       "w": "Dalam",
+       "s": 1279,
+       "e": 1288
+      },
+      {
+       "w": "Surah",
+       "s": 1289,
+       "e": 1300
+      },
+      {
+       "w": "At-Talaq",
+       "s": 1300,
+       "e": 1318
+      },
+      {
+       "w": "ayat",
+       "s": 1324,
+       "e": 1331
+      },
+      {
+       "w": "dua",
+       "s": 1332,
+       "e": 1339
+      },
+      {
+       "w": "dan",
+       "s": 1340,
+       "e": 1345
+      },
+      {
+       "w": "tiga",
+       "s": 1345,
+       "e": 1356
+      },
+      {
+       "w": "Allah",
+       "s": 1363,
+       "e": 1374
+      },
+      {
+       "w": "berfirman",
+       "s": 1375,
+       "e": 1395
+      }
+     ]
+    },
+    {
+     "text": "Dan sesiapa yang bertakwa kepada Allah, nescaya Dia akan mengadakan baginya jalan keluar.",
+     "start": 1435,
+     "end": 1613,
+     "words": [
+      {
+       "w": "Dan",
+       "s": 1438,
+       "e": 1445
+      },
+      {
+       "w": "sesiapa",
+       "s": 1445,
+       "e": 1458
+      },
+      {
+       "w": "yang",
+       "s": 1459,
+       "e": 1462
+      },
+      {
+       "w": "bertakwa",
+       "s": 1463,
+       "e": 1476
+      },
+      {
+       "w": "kepada",
+       "s": 1477,
+       "e": 1484
+      },
+      {
+       "w": "Allah",
+       "s": 1484,
+       "e": 1498
+      },
+      {
+       "w": "nescaya",
+       "s": 1505,
+       "e": 1518
+      },
+      {
+       "w": "Dia",
+       "s": 1519,
+       "e": 1525
+      },
+      {
+       "w": "akan",
+       "s": 1525,
+       "e": 1532
+      },
+      {
+       "w": "mengadakan",
+       "s": 1533,
+       "e": 1547
+      },
+      {
+       "w": "baginya",
+       "s": 1547,
+       "e": 1562
+      },
+      {
+       "w": "jalan",
+       "s": 1562,
+       "e": 1571
+      },
+      {
+       "w": "keluar",
+       "s": 1573,
+       "e": 1586
+      }
+     ]
+    },
+    {
+     "text": "Dan Dia memberinya rezeki dari arah yang tidak disangka-sangka.",
+     "start": 1625,
+     "end": 1754,
+     "words": [
+      {
+       "w": "Dan",
+       "s": 1628,
+       "e": 1634
+      },
+      {
+       "w": "Dia",
+       "s": 1635,
+       "e": 1640
+      },
+      {
+       "w": "memberinya",
+       "s": 1641,
+       "e": 1653
+      },
+      {
+       "w": "rezeki",
+       "s": 1654,
+       "e": 1666
+      },
+      {
+       "w": "dari",
+       "s": 1667,
+       "e": 1673
+      },
+      {
+       "w": "arah",
+       "s": 1673,
+       "e": 1685
+      },
+      {
+       "w": "yang",
+       "s": 1686,
+       "e": 1692
+      },
+      {
+       "w": "tidak",
+       "s": 1693,
+       "e": 1700
+      },
+      {
+       "w": "disangka-sangka",
+       "s": 1701,
+       "e": 1725
+      }
+     ]
+    }
+   ],
+   "from": 1260,
+   "dur": 493
+  },
+  {
+   "id": "myth",
+   "label": "MITOS & HAKIKAT",
+   "lines": [
+    {
+     "text": "Takwa bukan bermakna hidup kita takkan diuji.",
+     "start": 1769,
+     "end": 1879,
+     "words": [
+      {
+       "w": "Takwa",
+       "s": 1772,
+       "e": 1782
+      },
+      {
+       "w": "bukan",
+       "s": 1782,
+       "e": 1790
+      },
+      {
+       "w": "bermakna",
+       "s": 1791,
+       "e": 1805
+      },
+      {
+       "w": "hidup",
+       "s": 1806,
+       "e": 1816
+      },
+      {
+       "w": "kita",
+       "s": 1817,
+       "e": 1823
+      },
+      {
+       "w": "takkan",
+       "s": 1823,
+       "e": 1832
+      },
+      {
+       "w": "diuji",
+       "s": 1833,
+       "e": 1850
+      }
+     ]
+    },
+    {
+     "text": "Tetapi walaupun hidup terasa sempit…",
+     "start": 1891,
+     "end": 1979,
+     "words": [
+      {
+       "w": "Tetapi",
+       "s": 1894,
+       "e": 1906
+      },
+      {
+       "w": "walaupun",
+       "s": 1907,
+       "e": 1919
+      },
+      {
+       "w": "hidup",
+       "s": 1919,
+       "e": 1929
+      },
+      {
+       "w": "terasa",
+       "s": 1930,
+       "e": 1938
+      },
+      {
+       "w": "sempit",
+       "s": 1940,
+       "e": 1953
+      }
+     ]
+    },
+    {
+     "text": "kita tetap memilih untuk bertakwa.",
+     "start": 1991,
+     "end": 2078,
+     "words": [
+      {
+       "w": "kita",
+       "s": 1994,
+       "e": 2002
+      },
+      {
+       "w": "tetap",
+       "s": 2002,
+       "e": 2011
+      },
+      {
+       "w": "memilih",
+       "s": 2011,
+       "e": 2023
+      },
+      {
+       "w": "untuk",
+       "s": 2025,
+       "e": 2032
+      },
+      {
+       "w": "bertakwa",
+       "s": 2033,
+       "e": 2049
+      }
+     ]
+    }
+   ],
+   "from": 1753,
+   "dur": 324
+  },
+  {
+   "id": "balance",
+   "label": "TIMBANGAN",
+   "lines": [
+    {
+     "text": "Jangan sampai kerana terlalu mengejar duit…",
+     "start": 2093,
+     "end": 2193,
+     "words": [
+      {
+       "w": "Jangan",
+       "s": 2096,
+       "e": 2107
+      },
+      {
+       "w": "sampai",
+       "s": 2108,
+       "e": 2119
+      },
+      {
+       "w": "kerana",
+       "s": 2120,
+       "e": 2129
+      },
+      {
+       "w": "terlalu",
+       "s": 2130,
+       "e": 2141
+      },
+      {
+       "w": "mengejar",
+       "s": 2141,
+       "e": 2154
+      },
+      {
+       "w": "duit",
+       "s": 2155,
+       "e": 2167
+      }
+     ]
+    },
+    {
+     "text": "kita lepaskan takwa.",
+     "start": 2205,
+     "end": 2272,
+     "words": [
+      {
+       "w": "kita",
+       "s": 2208,
+       "e": 2216
+      },
+      {
+       "w": "lepaskan",
+       "s": 2217,
+       "e": 2230
+      },
+      {
+       "w": "takwa",
+       "s": 2231,
+       "e": 2244
+      }
+     ]
+    },
+    {
+     "text": "Kerana rezeki yang kita kejar itu… sebenarnya datang daripada Allah.",
+     "start": 2284,
+     "end": 2419,
+     "words": [
+      {
+       "w": "Kerana",
+       "s": 2287,
+       "e": 2297
+      },
+      {
+       "w": "rezeki",
+       "s": 2298,
+       "e": 2309
+      },
+      {
+       "w": "yang",
+       "s": 2309,
+       "e": 2312
+      },
+      {
+       "w": "kita",
+       "s": 2314,
+       "e": 2320
+      },
+      {
+       "w": "kejar",
+       "s": 2321,
+       "e": 2330
+      },
+      {
+       "w": "itu",
+       "s": 2331,
+       "e": 2337
+      },
+      {
+       "w": "sebenarnya",
+       "s": 2338,
+       "e": 2354
+      },
+      {
+       "w": "datang",
+       "s": 2355,
+       "e": 2366
+      },
+      {
+       "w": "daripada",
+       "s": 2367,
+       "e": 2378
+      },
+      {
+       "w": "Allah",
+       "s": 2378,
+       "e": 2391
+      }
+     ]
+    }
+   ],
+   "from": 2077,
+   "dur": 341
+  },
+  {
+   "id": "formula",
+   "label": "FORMULA",
+   "lines": [
+    {
+     "text": "Carilah rezeki dengan usaha,",
+     "start": 2434,
+     "end": 2514,
+     "words": [
+      {
+       "w": "Carilah",
+       "s": 2437,
+       "e": 2450
+      },
+      {
+       "w": "rezeki",
+       "s": 2450,
+       "e": 2462
+      },
+      {
+       "w": "dengan",
+       "s": 2463,
+       "e": 2470
+      },
+      {
+       "w": "usaha",
+       "s": 2470,
+       "e": 2485
+      }
+     ]
+    },
+    {
+     "text": "dan jemputlah keberkatannya dengan takwa.",
+     "start": 2526,
+     "end": 2622,
+     "words": [
+      {
+       "w": "dan",
+       "s": 2529,
+       "e": 2535
+      },
+      {
+       "w": "jemputlah",
+       "s": 2536,
+       "e": 2552
+      },
+      {
+       "w": "keberkatannya",
+       "s": 2553,
+       "e": 2573
+      },
+      {
+       "w": "dengan",
+       "s": 2573,
+       "e": 2580
+      },
+      {
+       "w": "takwa",
+       "s": 2581,
+       "e": 2593
+      }
+     ]
+    }
+   ],
+   "from": 2418,
+   "dur": 203
+  },
+  {
+   "id": "end",
+   "label": "PENUTUP",
+   "lines": [
+    {
+     "text": "Kalau perkongsian ini bermanfaat, kongsikanlah.",
+     "start": 2637,
+     "end": 2746,
+     "words": [
+      {
+       "w": "Kalau",
+       "s": 2640,
+       "e": 2647
+      },
+      {
+       "w": "perkongsian",
+       "s": 2648,
+       "e": 2664
+      },
+      {
+       "w": "ini",
+       "s": 2664,
+       "e": 2672
+      },
+      {
+       "w": "bermanfaat",
+       "s": 2673,
+       "e": 2693
+      },
+      {
+       "w": "kongsikanlah",
+       "s": 2697,
+       "e": 2719
+      }
+     ]
+    },
+    {
+     "text": "Mana tahu, ia jadi asbab kebaikan untuk orang lain.",
+     "start": 2758,
+     "end": 2893,
+     "words": [
+      {
+       "w": "Mana",
+       "s": 2761,
+       "e": 2770
+      },
+      {
+       "w": "tahu",
+       "s": 2771,
+       "e": 2783
+      },
+      {
+       "w": "ia",
+       "s": 2790,
+       "e": 2796
+      },
+      {
+       "w": "jadi",
+       "s": 2797,
+       "e": 2805
+      },
+      {
+       "w": "asbab",
+       "s": 2805,
+       "e": 2820
+      },
+      {
+       "w": "kebaikan",
+       "s": 2821,
+       "e": 2835
+      },
+      {
+       "w": "untuk",
+       "s": 2835,
+       "e": 2844
+      },
+      {
+       "w": "orang",
+       "s": 2844,
+       "e": 2853
+      },
+      {
+       "w": "lain",
+       "s": 2853,
+       "e": 2865
+      }
+     ]
+    },
+    {
+     "text": "Insya-Allah, kita jumpa lagi.",
+     "start": 2905,
+     "end": 2993,
+     "words": [
+      {
+       "w": "Insya-Allah",
+       "s": 2908,
+       "e": 2930
+      },
+      {
+       "w": "kita",
+       "s": 2936,
+       "e": 2943
+      },
+      {
+       "w": "jumpa",
+       "s": 2945,
+       "e": 2953
+      },
+      {
+       "w": "lagi",
+       "s": 2954,
+       "e": 2964
+      }
+     ]
+    }
+   ],
+   "from": 2621,
+   "dur": 460
+  }
+ ]
+}
